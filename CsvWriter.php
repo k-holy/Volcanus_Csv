@@ -475,7 +475,7 @@ class CsvWriter
 		if (!isset($this->file)) {
 			throw new \RuntimeException('File is not open.');
 		}
-		$headers = $this->buildResponseHeader($headers);
+		$headers = $this->buildResponseHeaders($headers);
 		foreach ($headers as $name => $value) {
 			header(sprintf('%s: %s', $name, $value));
 		}
