@@ -1,10 +1,9 @@
 <?php
 /**
- * Volcanus\Csv
+ * Volcanus libraries for PHP
  *
- * @copyright  2012 k-holy <k.holy74@gmail.com>
- * @author     k.holy74@gmail.com
- * @license    http://www.opensource.org/licenses/mit-license.php  The MIT License (MIT)
+ * @copyright 2012 k-holy <k.holy74@gmail.com>
+ * @license The MIT License (MIT)
  */
 spl_autoload_register(function($className) {
 	$namespace = 'Volcanus\Csv';
