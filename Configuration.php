@@ -41,7 +41,7 @@ class Configuration implements \IteratorAggregate
 		$this->parameters = array();
 		if (!empty($parameters)) {
 			foreach ($parameters as $name => $value) {
-				$this->initParameter($name, $value);
+				$this->define($name, $value);
 			}
 		}
 		return $this;
@@ -53,7 +53,7 @@ class Configuration implements \IteratorAggregate
 	 * @param string 設定名
 	 * @param mixed 初期値値
 	 */
-	public function initParameter($name, $value = null)
+	public function define($name, $value = null)
 	{
 		$this->parameters[$name] = $value;
 		return $this;
@@ -96,6 +96,16 @@ class Configuration implements \IteratorAggregate
 	}
 
 	/**
+	 * 設定値を配列で返します。
+	 *
+	 * @return array 設定値の配列
+	 */
+	public function values()
+	{
+		return array_values($this->parameters);
+	}
+
+	/**
 	 * 指定された設定の値をセットします。
 	 *
 	 * @param string 設定名
@@ -103,9 +113,6 @@ class Configuration implements \IteratorAggregate
 	 */
 	public function set($name, $value)
 	{
-		if (method_exists($this, 'set' . ucfirst($name))) {
-			return $this->{'set' . ucfirst($name)}($value);
-		}
 		if (!array_key_exists($name, $this->parameters)) {
 			throw new \InvalidArgumentException(
 				sprintf('The configuration "%s" does not exists.', $name));
@@ -121,9 +128,6 @@ class Configuration implements \IteratorAggregate
 	 */
 	public function get($name)
 	{
-		if (method_exists($this, 'get' . ucfirst($name))) {
-			return $this->{'get' . ucfirst($name)}();
-		}
 		if (!array_key_exists($name, $this->parameters)) {
 			throw new \InvalidArgumentException(
 				sprintf('The configuration "%s" does not exists.', $name));
