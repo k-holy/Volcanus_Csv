@@ -12,7 +12,7 @@ namespace Volcanus\Csv;
  *
  * @author k.holy74@gmail.com
  */
-class Configuration implements \IteratorAggregate
+class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 {
 
 	/**
@@ -177,4 +177,58 @@ class Configuration implements \IteratorAggregate
 		return new \ArrayIterator($this->parameters);
 	}
 
+	/**
+	 * Countable::count()
+	 *
+	 * @return int
+	 */
+	public function count()
+	{
+		return count($this->parameters);
+	}
+
+	/**
+	 * ArrayAccess::offsetExists()
+	 *
+	 * @param mixed
+	 * @return bool
+	 */
+	public function offsetExists($offset)
+	{
+		return $this->has($offset);
+	}
+
+	/**
+	 * ArrayAccess::offsetGet()
+	 *
+	 * @param mixed
+	 * @return mixed
+	 */
+	public function offsetGet($offset)
+	{
+		return $this->get($offset);
+	}
+
+	/**
+	 * ArrayAccess::offsetSet()
+	 *
+	 * @param mixed
+	 * @param mixed
+	 */
+	public function offsetSet($offset, $value)
+	{
+		$this->set($offset, $value);
+	}
+
+	/**
+	 * ArrayAccess::offsetUnset()
+	 *
+	 * @param mixed
+	 */
+	public function offsetUnset($offset)
+	{
+		if ($this->has($offset)) {
+			unset($this->parameters[$offset]);
+		}
+	}
 }

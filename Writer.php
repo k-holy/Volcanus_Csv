@@ -10,11 +10,11 @@ namespace Volcanus\Csv;
 use Volcanus\Csv\Configuration;
 
 /**
- * CsvWriter
+ * Writer
  *
  * @author k.holy74@gmail.com
  */
-class CsvWriter
+class Writer
 {
 
 	/**
@@ -45,16 +45,6 @@ class CsvWriter
 	public function __construct(array $configurations = array())
 	{
 		$this->initialize($configurations);
-	}
-
-	/**
-	 * destructor
-	 */
-	public function __destruct()
-	{
-		if (isset($this->file)) {
-			$this->close();
-		}
 	}
 
 	/**
@@ -235,12 +225,26 @@ class CsvWriter
 	 * @param callable フィールドの値を生成するコールバック
 	 * @return $this
 	 */
-	public function field($index, $name, $filter = null)
+	public function field($index, $filter = null, $name = null)
 	{
-		$this->fieldName($index, $name);
 		if (isset($filter)) {
 			$this->fieldFilter($index, $filter);
 		}
+		if (isset($name)) {
+			$this->fieldName($index, $name);
+		}
+		return $this;
+	}
+
+	/**
+	 * CSVフィールドを追加します。
+	 *
+	 * @param callable レコードフィルタ
+	 * @return $this
+	 */
+	public function appendField($filter = null, $name = null)
+	{
+		$this->field(count($this->fieldFilters), $filter, $name);
 		return $this;
 	}
 
@@ -344,35 +348,27 @@ class CsvWriter
 	}
 
 	/**
-	 * CSVデータを書き込むためのファイルを開きます。
+	 * ファイルを開きます。
 	 *
-	 * @param string ファイルパス または ファイルプロトコル
+	 * @param string ファイル名
 	 * @return object SplFileObject
 	 */
-	public function open($filename = 'php://temp')
+	public function open($filename)
 	{
 		$this->file = new \SplFileObject($filename, 'r+');
-		$this->file->setFlags(\SplFileObject::READ_CSV);
-		$this->file->setCsvControl(
-			$this->config->get('delimiter'),
-			$this->config->get('enclosure'),
-			$this->config->get('escape'));
-		$this->file->flock(LOCK_EX);
 		return $this->file;
 	}
 
 	/**
-	 * ファイルを解放します。
+	 * ファイルオブジェクトを返します。
 	 *
-	 * @return object SplFileObject
+	 * @return SplFileObject
 	 */
-	public function close()
+	public function getFile()
 	{
 		if (!isset($this->file)) {
 			throw new \RuntimeException('File is not open.');
 		}
-		$this->file->rewind();
-		$this->file->flock(LOCK_UN);
 		return $this->file;
 	}
 
@@ -411,10 +407,7 @@ class CsvWriter
 	 */
 	public function content()
 	{
-		if (!isset($this->file)) {
-			throw new \RuntimeException('File is not open.');
-		}
-		$this->close();
+		$this->file->rewind();
 		ob_start();
 		$this->file->fpassthru();
 		$content = ob_get_contents();
@@ -429,9 +422,6 @@ class CsvWriter
 	 */
 	public function contentLength()
 	{
-		if (!isset($this->file)) {
-			throw new \RuntimeException('File is not open.');
-		}
 		$status = $this->file->fstat();
 		return $status['size'];
 	}
@@ -444,6 +434,9 @@ class CsvWriter
 	 */
 	public function buildResponseHeaders(array $headers = array())
 	{
+		if (!isset($this->file)) {
+			throw new \RuntimeException('File is not open.');
+		}
 
 		if (!isset($headers['Content-Type'])) {
 			$headers['Content-Type'] = 'application/octet-stream';
@@ -475,10 +468,12 @@ class CsvWriter
 		if (!isset($this->file)) {
 			throw new \RuntimeException('File is not open.');
 		}
+
 		$headers = $this->buildResponseHeaders($headers);
 		foreach ($headers as $name => $value) {
 			header(sprintf('%s: %s', $name, $value));
 		}
+
 		$this->file->rewind();
 		$this->file->fpassthru();
 	}

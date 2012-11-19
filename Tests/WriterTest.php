@@ -7,19 +7,19 @@
  */
 namespace Volcanus\Csv\Tests;
 
-use Volcanus\Csv\CsvWriter;
+use Volcanus\Csv\Writer;
 
 /**
- * CsvWriterTest
+ * WriterTest
  *
  * @author k.holy74@gmail.com
  */
-class CsvWriterTest extends \PHPUnit_Framework_TestCase
+class WriterTest extends \PHPUnit_Framework_TestCase
 {
 
 	public function testDefaultConfigParameter()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$this->assertEquals(',', $writer->delimiter);
 		$this->assertEquals('"', $writer->enclosure);
 		$this->assertEquals('"', $writer->escape);
@@ -33,7 +33,7 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 
 	public function testConstructWithConfigParameters()
 	{
-		$writer = new CsvWriter(array(
+		$writer = new Writer(array(
 			'delimiter'       => "\t",
 			'enclosure'       => "'",
 			'escape'          => '\\',
@@ -57,14 +57,14 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 
 	public function testSetConfig()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->config('delimiter', "\t");
 		$this->assertEquals("\t", $writer->delimiter);
 	}
 
 	public function testGetConfig()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->delimiter = "\t";
 		$this->assertEquals("\t", $writer->config('delimiter'));
 	}
@@ -74,7 +74,7 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetConfigRaiseInvalidArgumentException()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->config('NOT-DEFINED-CONFIG', true);
 	}
 
@@ -83,13 +83,13 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testGetConfigRaiseInvalidArgumentException()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->config('NOT-DEFINED-CONFIG');
 	}
 
 	public function testSetDelimiter()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->delimiter = "\t";
 		$this->assertEquals("\t", $writer->delimiter);
 	}
@@ -99,7 +99,7 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetDelimiterRaiseInvalidArgumentException()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->delimiter = array();
 	}
 
@@ -108,13 +108,13 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetDelimiterRaiseInvalidArgumentExceptionWhenTwoOrMoreCharactersAreSpecified()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->delimiter = ',,';
 	}
 
 	public function testSetEnclosure()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->enclosure = "'";
 		$this->assertEquals("'", $writer->enclosure);
 	}
@@ -124,8 +124,8 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetEnclosureRaiseInvalidArgumentException()
 	{
-		$writer = new CsvWriter();
-		$writer->delimiter = array();
+		$writer = new Writer();
+		$writer->enclosure = array();
 	}
 
 	/**
@@ -133,13 +133,13 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetEnclosureRaiseInvalidArgumentExceptionWhenTwoOrMoreCharactersAreSpecified()
 	{
-		$writer = new CsvWriter();
-		$writer->delimiter = '""';
+		$writer = new Writer();
+		$writer->enclosure = '""';
 	}
 
 	public function testSetEscape()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->escape = '\\';
 		$this->assertEquals('\\', $writer->escape);
 	}
@@ -149,7 +149,7 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetEscapeRaiseInvalidArgumentException()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->escape = array();
 	}
 
@@ -158,13 +158,13 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetEscapeRaiseInvalidArgumentExceptionWhenTwoOrMoreCharactersAreSpecified()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->escape = '\\\\';
 	}
 
 	public function testSetEnclose()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->enclose = true;
 		$this->assertTrue($writer->enclose);
 	}
@@ -174,13 +174,13 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetEncloseRaiseInvalidArgumentException()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->enclose = 'true';
 	}
 
 	public function testSetNewLine()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->newLine = "\n";
 		$this->assertEquals("\n", $writer->newLine);
 	}
@@ -190,13 +190,13 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetNewLineRaiseInvalidArgumentException()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->newLine = array();
 	}
 
 	public function testSetInputEncoding()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->inputEncoding = 'EUC-JP';
  		$this->assertEquals('EUC-JP', $writer->inputEncoding);
 	}
@@ -206,13 +206,13 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetInputEncodingRaiseInvalidArgumentException()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->inputEncoding = array();
 	}
 
 	public function testSetOutputEncoding()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->outputEncoding = 'SJIS-win';
  		$this->assertEquals('SJIS-win', $writer->outputEncoding);
 	}
@@ -222,13 +222,13 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetOutputEncodingRaiseInvalidArgumentException()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->outputEncoding = array();
 	}
 
 	public function testSetWriteHeaderLine()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->writeHeaderLine = true;
  		$this->assertTrue($writer->writeHeaderLine);
 	}
@@ -238,13 +238,13 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetWriteHeaderLineRaiseInvalidArgumentException()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->writeHeaderLine = 'true';
 	}
 
 	public function testSetContentFilename()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->responseFilename = 'test.csv';
  		$this->assertEquals('test.csv', $writer->responseFilename);
 	}
@@ -254,48 +254,48 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetContentFilenameRaiseInvalidArgumentException()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->responseFilename = array();
 	}
 
 	public function testBuildField()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$field = '田中';
 		$this->assertEquals("田中", $writer->buildField($field));
 	}
 
 	public function testBuildFieldIncludesDelimiter()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$field = '田中,';
 		$this->assertEquals("\"田中,\"", $writer->buildField($field));
 	}
 
 	public function testBuildFieldIncludesCarriageReturnAndLineFeed()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$field = "田中\r\n\r\n以上";
 		$this->assertEquals("\"田中\r\n\r\n以上\"", $writer->buildField($field));
 	}
 
 	public function testBuildFieldIncludesCarriageReturn()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$field = "田中\r\r以上";
 		$this->assertEquals("\"田中\r\r以上\"", $writer->buildField($field));
 	}
 
 	public function testBuildFieldIncludesLineFeed()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$field = "田中\n\n以上";
 		$this->assertEquals("\"田中\n\n以上\"", $writer->buildField($field));
 	}
 
 	public function testBuildFieldEscapeIncludesEnclosure()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$field = '田中"';
 		$this->assertEquals('"田中"""', $writer->buildField($field));
 
@@ -306,7 +306,7 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 
 	public function testBuildFieldEscapeIncludesRepetitionOfEnclosure()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$field = '"田"中""';
 		$this->assertEquals('"""田""中"""""', $writer->buildField($field));
 
@@ -315,41 +315,47 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals('"\"田\"中\"\""', $writer->buildField($field));
 	}
 
-	public function testBuildFieldWithConvertEncoding()
+	public function testBuildFieldWithEncoding()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->inputEncoding = 'UTF-8';
 		$writer->outputEncoding = 'SJIS';
 		$field = 'ソ十貼能表暴予';
-		$this->assertEquals(mb_convert_encoding($field, 'SJIS', 'UTF-8'), $writer->buildField($field));
+		$this->assertEquals(
+			mb_convert_encoding($field, 'SJIS', 'UTF-8'),
+			$writer->buildField($field)
+		);
 	}
 
 	public function testBuildLine()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$this->assertEquals("1,田中\r\n",
 			$writer->buildLine(array('1', '田中')));
 	}
 
 	public function testBuildLineIncludesDelimiter()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$this->assertEquals("1,\"田中,\"\r\n",
 			$writer->buildLine(array('1', '田中,')));
 	}
 
-	public function testBuildLineWithConvertEncoding()
+	public function testBuildLineWithEncoding()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->inputEncoding = 'UTF-8';
 		$writer->outputEncoding = 'SJIS';
 		$fields = array('1', 'ソ十貼能表暴予');
-		$this->assertEquals(mb_convert_encoding("1,ソ十貼能表暴予\r\n", 'SJIS', 'UTF-8'), $writer->buildLine($fields));
+		$this->assertEquals(
+			mb_convert_encoding("1,ソ十貼能表暴予\r\n", 'SJIS', 'UTF-8'),
+			$writer->buildLine($fields)
+		);
 	}
 
 	public function testBuildLineWithEnclose()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->enclose = true;
 		$this->assertEquals("\"1\",\"田中\"\r\n",
 			$writer->buildLine(array('1', '田中')));
@@ -357,7 +363,7 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 
 	public function testFieldName()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->fieldName(0, 'ユーザーID');
 		$writer->fieldName(1, 'ユーザー名');
 		$this->assertEquals('ユーザーID', $writer->fieldName(0));
@@ -366,36 +372,70 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 
 	public function testBuildHeaderLine()
 	{
-		$writer = new CsvWriter();
-		$writer->field(0, 'ユーザーID');
-		$writer->field(1, 'ユーザー名');
+		$writer = new Writer();
+		$writer->fieldName(0, 'ユーザーID');
+		$writer->fieldName(1, 'ユーザー名');
 		$this->assertEquals("ユーザーID,ユーザー名\r\n", $writer->buildHeaderLine());
 	}
 
 	public function testFieldFilter()
 	{
-		$writer = new CsvWriter();
-		$idFilter = function($item) {
-			return $item['id'];
-		};
-		$nameFilter = function($item) {
+		$writer = new Writer();
+		$filter1 = function($item) {
 			return $item['surname'] . $item['firstname'];
 		};
-		$writer->fieldFilter(0, $idFilter);
-		$writer->fieldFilter(1, $nameFilter);
-		$this->assertEquals($idFilter  , $writer->fieldFilter(0));
-		$this->assertEquals($nameFilter, $writer->fieldFilter(1));
+		$filter2 = function($item) {
+			return (isset($item['age'])) ? $item['age'] : '不詳';
+		};
+		$writer->fieldFilter(0, $filter1);
+		$writer->fieldFilter(1, $filter2);
+		$this->assertEquals($filter1, $writer->fieldFilter(0));
+		$this->assertEquals($filter2, $writer->fieldFilter(1));
+	}
+
+	public function testField()
+	{
+		$writer = new Writer();
+		$filter1 = function($item) {
+			return $item['surname'] . $item['firstname'];
+		};
+		$filter2 = function($item) {
+			return (isset($item['age'])) ? $item['age'] : '不詳';
+		};
+		$writer->field(0, $filter1, 'ユーザー名');
+		$writer->field(1, $filter2, '年齢');
+		$this->assertEquals('ユーザー名', $writer->fieldName(0));
+		$this->assertEquals('年齢'      , $writer->fieldName(1));
+		$this->assertEquals($filter1, $writer->fieldFilter(0));
+		$this->assertEquals($filter2, $writer->fieldFilter(1));
+	}
+
+	public function testAppendField()
+	{
+		$writer = new Writer();
+		$filter1 = function($item) {
+			return $item['surname'] . $item['firstname'];
+		};
+		$filter2 = function($item) {
+			return (isset($item['age'])) ? $item['age'] : '不詳';
+		};
+		$writer->appendField($filter1, 'ユーザー名');
+		$writer->appendField($filter2, '年齢' );
+		$this->assertEquals('ユーザー名', $writer->fieldName(0));
+		$this->assertEquals('年齢'      , $writer->fieldName(1));
+		$this->assertEquals($filter1, $writer->fieldFilter(0));
+		$this->assertEquals($filter2, $writer->fieldFilter(1));
 	}
 
 	public function testBuildFields()
 	{
-		$writer = new CsvWriter();
-		$writer->field(0, 'ユーザー名', function($item) {
+		$writer = new Writer();
+		$writer->appendField(function($item) {
 			return $item['surname'] . $item['firstname'];
-		});
-		$writer->field(1, '年齢', function($item) {
+		}, 'ユーザー名');
+		$writer->appendField(function($item) {
 			return (isset($item['age'])) ? $item['age'] : '不詳';
-		});
+		}, '年齢');
 		$this->assertEquals(array('田中一郎', '22'),
 			$writer->buildFields(array(
 				'id'        => '1',
@@ -415,13 +455,13 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 
 	public function testBuildContentLine()
 	{
-		$writer = new CsvWriter();
-		$writer->field(0, 'ユーザー名', function($item) {
+		$writer = new Writer();
+		$writer->appendField(function($item) {
 			return $item['surname'] . $item['firstname'];
-		});
-		$writer->field(1, '年齢', function($item) {
+		}, 'ユーザー名');
+		$writer->appendField(function($item) {
 			return (isset($item['age'])) ? $item['age'] : '不詳';
-		});
+		}, '年齢');
 		$this->assertEquals("田中一郎,22\r\n",
 			$writer->buildContentLine(array(
 				'id'        => '1',
@@ -439,79 +479,47 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 
 	public function testOpen()
 	{
-		$writer = new CsvWriter();
-		$this->assertInstanceOf('\SplFileObject', $writer->open('php://memory'));
+		$writer = new Writer();
+		$this->assertInstanceOf('\SplFileInfo', $writer->open('php://memory'));
 	}
 
-	public function testClose()
+	public function testGetFile()
 	{
-		$writer = new CsvWriter();
-		$writer->open('php://memory');
-		$this->assertInstanceOf('\SplFileObject', $writer->close());
-	}
-
-	/**
-	 * @expectedException \RuntimeException
-	 */
-	public function testCloseRaiseRuntimeExceptionWhenFileIsNotOpen()
-	{
-		$writer = new CsvWriter();
-		$writer->close();
+		$writer = new Writer();
+		$file = $writer->open('php://memory');
+		$this->assertSame($file, $writer->getFile());
+		$this->assertSame($file, $writer->file);
 	}
 
 	public function testWrite()
 	{
-		$writer = new CsvWriter();
+		$writer = new Writer();
 		$writer->fieldName(0, 'ユーザーID');
 		$writer->fieldName(1, 'ユーザー名');
-		$writer->open('php://temp');
-		$writer->write(array(
-			array('1', '田中'),
-		));
-		$this->assertGreaterThan(1, $writer->contentLength());
-	}
-
-	public function testWriteAndContent()
-	{
-		$writer = new CsvWriter();
-		$writer->fieldName(0, 'ユーザーID');
-		$writer->fieldName(1, 'ユーザー名');
-		$writer->open('php://temp');
+		$writer->open('php://memory');
 		$writer->write(array(
 			array('1', '田中'),
 		));
 		$this->assertEquals("1,田中\r\n", $writer->content());
 	}
 
-	public function testWriteAndContentWithHeaderLine()
+	public function testWriteWithHeaderLine()
 	{
-		$writer = new CsvWriter();
-		$writer->writeHeaderLine = true;
+		$writer = new Writer();
 		$writer->fieldName(0, 'ユーザーID');
 		$writer->fieldName(1, 'ユーザー名');
-		$writer->open('php://temp');
+		$writer->open('php://memory');
+		$writer->writeHeaderLine = true;
 		$writer->write(array(
 			array('1', '田中'),
 		));
 		$this->assertStringStartsWith("ユーザーID,ユーザー名\r\n", $writer->content());
 	}
 
-	public function testWriteAndContentLength()
-	{
-		$writer = new CsvWriter();
-		$writer->fieldName(0, 'ユーザーID');
-		$writer->fieldName(1, 'ユーザー名');
-		$writer->open('php://temp');
-		$writer->write(array(
-			array('1', '田中'),
-		));
-		$this->assertEquals(strlen("1,田中\r\n"), $writer->contentLength());
-	}
-
 	public function testBuildResponseHeaders()
 	{
-		$writer = new CsvWriter();
-		$writer->open('php://temp');
+		$writer = new Writer();
+		$writer->open('php://memory');
 		$writer->write(array(
 			array('1', '田中'),
 		));
@@ -523,12 +531,12 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 
 	public function testBuildResponseHeadersWithResponseFilename()
 	{
-		$writer = new CsvWriter();
-		$writer->responseFilename = 'test.csv';
-		$writer->open('php://temp');
+		$writer = new Writer();
+		$writer->open('php://memory');
 		$writer->write(array(
 			array('1', '田中'),
 		));
+		$writer->responseFilename = 'test.csv';
 		$headers = $writer->buildResponseHeaders();
 		$this->assertEquals($headers['Content-Type'], 'application/octet-stream; name="test.csv"');
 		$this->assertEquals($headers['Content-Disposition'], 'attachement; filename="test.csv"');
@@ -537,15 +545,17 @@ class CsvWriterTest extends \PHPUnit_Framework_TestCase
 
 	public function testBuildResponseHeadersWithMultibyteResponseFilename()
 	{
-		$writer = new CsvWriter();
-		$writer->responseFilename = 'ソ十貼能表暴予.csv';
-		$writer->open('php://temp');
+		$writer = new Writer();
+		$writer->open('php://memory');
 		$writer->write(array(
 			array('1', '田中'),
 		));
+		$writer->responseFilename = 'ソ十貼能表暴予.csv';
 		$headers = $writer->buildResponseHeaders();
-		$this->assertEquals($headers['Content-Type'], sprintf('application/octet-stream; name="%s"', mb_convert_encoding('ソ十貼能表暴予.csv', 'SJIS-win')));
-		$this->assertEquals($headers['Content-Disposition'], sprintf('attachement; filename="%s"', mb_convert_encoding('ソ十貼能表暴予.csv', 'SJIS-win')));
+		$this->assertEquals($headers['Content-Type'],
+			sprintf('application/octet-stream; name="%s"', mb_convert_encoding('ソ十貼能表暴予.csv', 'SJIS-win')));
+		$this->assertEquals($headers['Content-Disposition'],
+			sprintf('attachement; filename="%s"', mb_convert_encoding('ソ十貼能表暴予.csv', 'SJIS-win')));
 		$this->assertEquals($headers['Content-Length'], $writer->contentLength());
 	}
 
