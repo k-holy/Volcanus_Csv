@@ -209,8 +209,8 @@ class ReaderTest extends \PHPUnit_Framework_TestCase
 	public function testSetParseByPcre()
 	{
 		$reader = new Reader();
-		$reader->parseByPcre = true;
- 		$this->assertTrue($reader->parseByPcre);
+		$reader->parseByPcre = false;
+ 		$this->assertFalse($reader->parseByPcre);
 	}
 
 	/**
@@ -219,23 +219,27 @@ class ReaderTest extends \PHPUnit_Framework_TestCase
 	public function testSetParseByPcreRaiseInvalidArgumentException()
 	{
 		$reader = new Reader();
-		$reader->parseByPcre = 'true';
+		$reader->parseByPcre = 'false';
 	}
 
 	public function testFilter()
 	{
 		$reader = new Reader();
+
 		$filter1 = function($item) {
 			$item[0] = sprintf('%02d', $item[0]);
 			return $item;
 		};
+
 		$filter2 = function($item) {
 			$user = new \Stdclass();
 			$user->id = $item[0];
 			return $user;
 		};
+
 		$reader->filter(0, $filter1);
 		$reader->filter(1, $filter2);
+
 		$this->assertEquals($filter1, $reader->filter(0));
 		$this->assertEquals($filter2, $reader->filter(1));
 	}
@@ -243,235 +247,157 @@ class ReaderTest extends \PHPUnit_Framework_TestCase
 	public function testAppendFilter()
 	{
 		$reader = new Reader();
+
 		$filter1 = function($item) {
 			$item[0] = sprintf('%02d', $item[0]);
 			return $item;
 		};
+
 		$filter2 = function($item) {
 			$user = new \Stdclass();
 			$user->id = $item[0];
 			return $user;
 		};
+
 		$reader->appendFilter($filter1);
-		$this->assertEquals($filter1, $reader->filter(0));
 		$reader->appendFilter($filter2);
+
+		$this->assertEquals($filter1, $reader->filter(0));
 		$this->assertEquals($filter2, $reader->filter(1));
 	}
 
-	public function testBuildRecord()
+	public function testApplyFilters()
 	{
 		$reader = new Reader();
+
 		$reader->filter(0, function($item) {
 			$user = new \Stdclass();
 			$user->id        = $item[0];
 			$user->surname   = $item[1];
 			$user->firstname = $item[2];
-			$user->age       = $item[3];
+			$user->age       = (int)$item[3];
 			return $user;
 		});
-		$user = $reader->buildRecord(array('1', '田中', '一郎', '22'));
+
+		$user = $reader->applyFilters(array('1', '田中', '一郎', '22'));
+
 		$this->assertEquals('1'   , $user->id);
 		$this->assertEquals('田中', $user->surname);
 		$this->assertEquals('一郎', $user->firstname);
-		$this->assertEquals('22'  , $user->age);
+		$this->assertEquals(22    , $user->age);
 	}
 
-	public function testConvertCarriageReturnAndLineFeedAtEndOfLine()
+	public function testConvert()
 	{
 		$reader = new Reader();
-		$line = '1,田中' . "\r\n";
+
 		$this->assertEquals(array('1', '田中'),
-			$reader->convert($line));
+			$reader->convert("1,田中\r\n"));
 	}
 
-	public function testConvertLineFeedAtEndOfLine()
+	public function testConvertIgnoreNullByte()
 	{
 		$reader = new Reader();
-		$line = '1,田中' . "\n";
 		$this->assertEquals(array('1', '田中'),
-			$reader->convert($line));
+			$reader->convert("1,田中\x00"));
 	}
 
-	public function testConvertCarriageReturnAtEndOfLine()
+	public function testConvertEncloseDelimiter()
 	{
 		$reader = new Reader();
-		$line = '1,田中' . "\r";
-		$this->assertEquals(array('1', '田中'),
-			$reader->convert($line));
-	}
 
-	public function testConvertNoCarriageReturnAndLineFeedAtEndOfLine()
-	{
-		$reader = new Reader();
-		$line = <<< LINE
-1,田中
-LINE;
-		$this->assertEquals(array('1', '田中'),
-			$reader->convert($line));
-	}
-
-	public function testConvertNullByteAtEndOfLine()
-	{
-		$reader = new Reader();
-		$line = '1,田中' . "\x00";
-		$this->assertEquals(array('1', '田中'),
-			$reader->convert($line));
-	}
-
-	public function testConvertIncludesDelimiter()
-	{
-		$reader = new Reader();
-		$line = <<< LINE
-1,"田中,"
-LINE;
 		$this->assertEquals(array('1', '田中,'),
-			$reader->convert($line));
+			$reader->convert('1,"田中,"'));
 	}
 
-	public function testConvertIncludesEscapedEnclosure()
+	public function testConvertEscapedEnclosure()
 	{
 		$reader = new Reader();
-		$line = <<< LINE
-1,"田中"""
-LINE;
+
 		$this->assertEquals(array('1', '田中"'),
-			$reader->convert($line));
+			$reader->convert('1,"田中"""'));
 	}
 
-	public function testConvertIncludesCarriageReturnAndLineFeed()
+	public function testConvertEnclosedCarriageReturnAndLineFeed()
 	{
 		$reader = new Reader();
-		$line = sprintf('1,"田中%s%s"%s', "\r\n", "\r\n", "\r\n");
-		$this->assertEquals(array('1', "田中\r\n\r\n"),
-			$reader->convert($line));
+		$this->assertEquals(array('1', "田中\r\n"),
+			$reader->convert("1,\"田中\r\n\""));
 	}
 
-	public function testConvertIncludesCarriageReturn()
+	public function testConvertOnlySpaceField()
 	{
 		$reader = new Reader();
-		$line = sprintf('1,"田中%s%s"%s', "\r", "\r", "\r\n");
-		$this->assertEquals(array('1', "田中\r\r"),
-			$reader->convert($line));
-	}
 
-	public function testConvertIncludesLineFeed()
-	{
-		$reader = new Reader();
-		$line = sprintf('1,"田中%s%s"%s', "\n", "\n", "\r\n");
-		$this->assertEquals(array('1', "田中\n\n"),
-			$reader->convert($line));
-	}
-
-	public function testConvertSpaceAtHeadOfLine()
-	{
-		$reader = new Reader();
-		$line = <<< LINE
- ,1,田中
-LINE;
 		$this->assertEquals(array(' ', '1', '田中'),
-			$reader->convert($line));
+			$reader->convert(' ,1,田中'));
 	}
 
-	public function testConvertUnclosedEnclosureAtHeadOfLine()
+	public function testConvertNotClosedEnclosure()
 	{
 		$reader = new Reader();
-		$line = <<< LINE
-",1,田中
-LINE;
-		// parseByPcreオプションによって結果が異なる
-		$reader->parseByPcre = true;
-		$this->assertEquals(array('"', '1', '田中'),
-			$reader->convert($line));
 
+		$this->assertEquals(array('"', '1', '田中'),
+			$reader->convert('",1,田中'));
+	}
+
+	public function testConvertNotClosedEnclosureByParseStrGetCsv()
+	{
+		$reader = new Reader();
 		$reader->parseByPcre = false;
 		$this->assertEquals(array(',1,田中'),
-			$reader->convert($line));
+			$reader->convert('",1,田中'));
 
 	}
 
-	public function testConvertUnOpenedEnclosure()
+	public function testConvertNotOpenedEnclosure()
 	{
 		$reader = new Reader();
-		$line = <<< LINE
-,","1","田中"
-LINE;
-		// parseByPcreオプションによって結果が異なる
-		$reader->parseByPcre = true;
-		$this->assertEquals(array('', '"', '1', '田中'),
-			$reader->convert($line));
 
+		$this->assertEquals(array('', '"', '1', '田中'),
+			$reader->convert(',","1","田中"'));
+	}
+
+	public function testConvertNotOpenedEnclosureByParseStrGetCsv()
+	{
+		$reader = new Reader();
 		$reader->parseByPcre = false;
 		$this->assertEquals(array('', ',1"', '田中'),
-			$reader->convert($line));
+			$reader->convert(',","1","田中"'));
 	}
 
-	public function testConvertUnclosedEnclosureAtHeadOfLineEncloseAll()
+	public function testConvertNotClosedEnclosureAndSpaceBeforeDelimiter()
 	{
 		$reader = new Reader();
-		$line = <<< LINE
-","1"","田中"
-LINE;
-		// parseByPcreオプションによって結果が異なる
-		$reader->parseByPcre = true;
-		$this->assertEquals(array('"', '1"', '田中'),
-			$reader->convert($line));
 
-		$reader->parseByPcre = false;
-		$this->assertEquals(array(',1""', '田中'),
-			$reader->convert($line));
-	}
-
-	public function testConvertUnclosedEnclosureAtHeadOfLineAndSpaceBeforeComma()
-	{
-		$reader = new Reader();
-		$line = <<< LINE
-" ,"1" ,"田中""
-LINE;
-		// parseByPcreオプションによって結果が異なる
-		$reader->parseByPcre = true;
 		$this->assertEquals(array('" ', '"1" ', '田中"'),
-			$reader->convert($line));
+			$reader->convert('" ,"1" ,"田中""'));
+	}
 
+	public function testConvertNotClosedEnclosureAndSpaceBeforeDelimiterByParseStrGetCsv()
+	{
+		$reader = new Reader();
 		$reader->parseByPcre = false;
+
 		$this->assertEquals(array(' ,1" ', '田中"'),
-			$reader->convert($line));
+			$reader->convert('" ,"1" ,"田中""'));
 	}
 
-	public function testConvertUnclosedEnclosureAtHeadOfLineAndSpaceAfterComma()
+	public function testConvertNotClosedEnclosureAndSpaceAfterDelimiter()
 	{
 		$reader = new Reader();
-		$line = <<< LINE
-", "1", "田中""
-LINE;
-		// parseByPcreオプションによって結果が異なる
-		$reader->parseByPcre = true;
+
 		$this->assertEquals(array('"', ' "1"', ' "田中"'),
-			$reader->convert($line));
+			$reader->convert('", "1", "田中""'));
+	}
 
+	public function testConvertNotClosedEnclosureAndSpaceAfterDelimiterByParseStrGetCsv()
+	{
+		$reader = new Reader();
 		$reader->parseByPcre = false;
+
 		$this->assertEquals(array(', 1"', '田中"'),
-			$reader->convert($line));
-
-	}
-
-	public function testConvertDelimiterAtEndOfLine()
-	{
-		$reader = new Reader();
-		$line = <<< LINE
-1,田中,
-LINE;
-		$this->assertEquals(array('1', '田中', ''),
-			$reader->convert($line));
-	}
-
-	public function testConvertEnclosureAtEndOfLine()
-	{
-		$reader = new Reader();
-		$line = <<< LINE
-1,田中"
-LINE;
-		$this->assertEquals(array('1', '田中"'),
-			$reader->convert($line));
+			$reader->convert('", "1", "田中""'));
 	}
 
 	public function testConvertTabSeparatedValues()
@@ -479,29 +405,33 @@ LINE;
 		$reader = new Reader();
 		$reader->delimiter = "\t";
 		$reader->enclosure = '"';
-		$line = sprintf('1%s"田中%s"%s', "\t", "\t", "\r\n");
-		$this->assertEquals(array('1', "田中\t"),
-			$reader->convert($line));
+
+		$this->assertEquals(array('1', '田中'),
+			$reader->convert("1\t\"田中\""));
 	}
 
-	public function testConvertTabSeparatedValuesEscapeBackslash()
+	public function testConvertTabSeparatedValuesAndEscapedEnclosure()
 	{
 		$reader = new Reader();
 		$reader->delimiter = "\t";
 		$reader->enclosure = '"';
 		$reader->escape    = '\\';
-		$line = sprintf('1%s"田中\\""%s', "\t", "\r\n");
 
-		// parseByPcreオプションによって結果が異なる
-		// ONの場合は独自処理でescape対応OK
-		$reader->parseByPcre = true;
 		$this->assertEquals(array('1', '田中"'),
-			$reader->convert($line));
+			$reader->convert("1\t\"田中\\\"\""));
+	}
 
+	public function testConvertTabSeparatedValuesAndEscapedEnclosureByStrGetCsv()
+	{
+		$reader = new Reader();
+		$reader->delimiter = "\t";
+		$reader->enclosure = '"';
+		$reader->escape    = '\\';
 		// str_getcsv()はescape対応NG (PHP5.4.8現在)
 		$reader->parseByPcre = false;
-		$this->assertEquals(array('1', '田中\\"'),
-			$reader->convert($line));
+
+		$this->assertNotEquals(array('1', '田中"'),
+			$reader->convert("1\t\"田中\\\"\""));
 	}
 
 	public function testConvertWithEncoding()
@@ -509,11 +439,12 @@ LINE;
 		$reader = new Reader();
 		$reader->inputEncoding = 'UTF-8';
 		$reader->outputEncoding = 'SJIS';
-		$line = '1,ソ十貼能表暴予' . "\r\n";
+
 		$fields = array('1', 'ソ十貼能表暴予');
 		mb_convert_variables('SJIS', 'UTF-8', $fields);
+
 		$this->assertEquals($fields,
-			$reader->convert($line));
+			$reader->convert('1,ソ十貼能表暴予'));
 	}
 
 	public function testOpen()
@@ -536,6 +467,7 @@ LINE;
 		$reader->open('php://memory');
 		$reader->file->fwrite("1,田中\r\n");
 		$reader->file->rewind();
+
 		$this->assertEquals(array('1', '田中'),
 			$reader->fetch());
 	}
@@ -547,7 +479,9 @@ LINE;
 		$reader->file->fwrite("ユーザーID,ユーザー名\r\n");
 		$reader->file->fwrite("1,田中\r\n");
 		$reader->file->rewind();
+
 		$reader->skipHeaderLine = true;
+
 		$this->assertEquals(array('1', '田中'),
 			$reader->fetch());
 	}
@@ -557,20 +491,47 @@ LINE;
 		$reader = new Reader();
 		$reader->open('php://memory');
 		$reader->file->fwrite("1,田中,一郎,22\r\n");
+		$reader->file->fwrite("2,山田,老人,91\r\n");
+		$reader->file->fwrite("3,田中,次郎,45\r\n");
+		$reader->file->fwrite("4,佐藤,ウメ,95\r\n");
 		$reader->file->rewind();
+
 		$reader->appendFilter(function($item) {
 			$user = new \Stdclass();
 			$user->id        = $item[0];
 			$user->surname   = $item[1];
 			$user->firstname = $item[2];
-			$user->age       = $item[3];
+			$user->age       = (int)$item[3];
 			return $user;
 		});
+
+		// 1st record
 		$user = $reader->fetch();
 		$this->assertEquals('1'   , $user->id);
 		$this->assertEquals('田中', $user->surname);
 		$this->assertEquals('一郎', $user->firstname);
-		$this->assertEquals('22'  , $user->age);
+		$this->assertEquals(22    , $user->age);
+
+		// 2nd record
+		$user = $reader->fetch();
+		$this->assertEquals('2'   , $user->id);
+		$this->assertEquals('山田', $user->surname);
+		$this->assertEquals('老人', $user->firstname);
+		$this->assertEquals(91    , $user->age);
+
+		// 3rd record
+		$user = $reader->fetch();
+		$this->assertEquals('3'   , $user->id);
+		$this->assertEquals('田中', $user->surname);
+		$this->assertEquals('次郎', $user->firstname);
+		$this->assertEquals(45    , $user->age);
+
+		// 4th record
+		$user = $reader->fetch();
+		$this->assertEquals('4'   , $user->id);
+		$this->assertEquals('佐藤', $user->surname);
+		$this->assertEquals('ウメ', $user->firstname);
+		$this->assertEquals(95    , $user->age);
 	}
 
 	public function testFetchWithFilterAndEncoding()
@@ -579,17 +540,73 @@ LINE;
 		$reader->open('php://memory');
 		$reader->file->fwrite("1,ソ十貼能表暴予\r\n");
 		$reader->file->rewind();
+
 		$reader->appendFilter(function($item) {
 			$test = new \Stdclass();
 			$test->id   = $item[0];
 			$test->text = $item[1];
 			return $test;
 		});
+
 		$reader->inputEncoding = 'UTF-8';
 		$reader->outputEncoding = 'SJIS';
+
 		$test = $reader->fetch();
 		$this->assertEquals('1', $test->id);
 		$this->assertEquals(mb_convert_encoding('ソ十貼能表暴予', 'SJIS', 'UTF-8'), $test->text);
+	}
+
+	public function testFetchWithSkipHeaderLineAndSomeFilters()
+	{
+		$reader = new Reader();
+		$reader->open('php://memory');
+		$reader->file->fwrite("ユーザーID,姓,名,年齢\r\n");
+		$reader->file->fwrite("1,田中,一郎,22\r\n");
+		$reader->file->fwrite("2,山田,老人,91\r\n");
+		$reader->file->fwrite("3,田中,次郎,45\r\n");
+		$reader->file->fwrite("4,佐藤,ウメ,95\r\n");
+		$reader->file->rewind();
+
+		$reader->appendFilter(function($item) {
+			$user = new \Stdclass();
+			$user->id        = $item[0];
+			$user->surname   = $item[1];
+			$user->firstname = $item[2];
+			$user->age       = (int)$item[3];
+			return $user;
+		});
+
+		$reader->appendFilter(function($user) {
+			if ($user->age > 90) {
+				return $user;
+			}
+			return false;
+		});
+
+		$reader->skipHeaderLine = true;
+
+		// 1st record
+		$elder = $reader->fetch();
+		$this->assertFalse($elder);
+
+		// 2nd record
+		$elder = $reader->fetch();
+		$this->assertEquals('2'   , $elder->id);
+		$this->assertEquals('山田', $elder->surname);
+		$this->assertEquals('老人', $elder->firstname);
+		$this->assertGreaterThan(90, $elder->age);
+
+		// 3rd record
+		$elder = $reader->fetch();
+		$this->assertFalse($elder);
+
+		// 4th record
+		$elder = $reader->fetch();
+		$this->assertEquals('4'   , $elder->id);
+		$this->assertEquals('佐藤', $elder->surname);
+		$this->assertEquals('ウメ', $elder->firstname);
+		$this->assertGreaterThan(90, $elder->age);
+
 	}
 
 }

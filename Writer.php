@@ -8,6 +8,7 @@
 namespace Volcanus\Csv;
 
 use Volcanus\Csv\Configuration;
+use Volcanus\Csv\Builder;
 
 /**
  * Writer
@@ -23,19 +24,24 @@ class Writer
 	private $config;
 
 	/**
-	 * @var Configuration フィールドフィルタのコレクション
+	 * @var Configuration フィールド設定のコレクション
 	 */
-	private $fieldFilters;
+	private $fields;
 
 	/**
 	 * @var Configuration フィールド名のコレクション
 	 */
-	private $fieldNames;
+	private $labels;
 
 	/**
 	 * @var SplFileObject 出力対象ファイル
 	 */
 	private $file;
+
+	/**
+	 * @var Builder CSVビルダ
+	 */
+	private $builder;
 
 	/**
 	 * constructor
@@ -68,9 +74,10 @@ class Writer
 		if (!empty($configurations)) {
 			$this->config->parameters($configurations);
 		}
-		$this->fieldFilters = new Configuration();
-		$this->fieldNames = new Configuration();
+		$this->fields = new Configuration();
+		$this->labels = new Configuration();
 		$this->file = null;
+		$this->builder = new Builder();
 		return $this;
 	}
 
@@ -145,107 +152,29 @@ class Writer
 	 * @param array  1レコード分のフィールド配列
 	 * @return string
 	 */
-	public function buildLine($fields) 
+	public function build($fields) 
 	{
-		$line = '';
 
-		$delimiter = $this->config->get('delimiter');
-		$newLine   = $this->config->get('newLine');
-
-		$count = count($fields);
-		$index = 0;
-		foreach ($fields as $field) {
-			$line .= $this->buildField($field);
-			$index++;
-			if ($index < $count) {
-				$line .= $delimiter;
-			}
-		}
-
-		return $line . $newLine;
-	}
-
-	/**
-	 * フィールドの文字列をCSV形式の文字列に変換して返します。
-	 *
-	 * @param string フィールドの文字列
-	 * @return string
-	 */
-	public function buildField($field)
-	{
-		$csv_field = '';
-
-		$delimiter      = $this->config->get('delimiter');
-		$enclosure      = $this->config->get('enclosure');
-		$escape         = $this->config->get('escape');
-		$enclose        = $this->config->get('enclose');
 		$outputEncoding = $this->config->get('outputEncoding');
 		$inputEncoding  = $this->config->get('inputEncoding');
 
-		if (!$enclose && (
-			mb_strpos($field, $delimiter, 0, $inputEncoding) !== false ||
-			mb_strpos($field, $enclosure, 0, $inputEncoding) !== false ||
-			mb_strpos($field, $escape, 0, $inputEncoding) !== false ||
-			mb_strpos($field, "\n", 0, $inputEncoding) !== false ||
-			mb_strpos($field, "\r", 0, $inputEncoding) !== false
-		)) {
-			$enclose = true;
-		}
-
-		if ($enclose) {
-			$char_length = mb_strlen($field, $inputEncoding);
-			for ($char_index = 0; $char_index < $char_length; $char_index++) {
-				$char = mb_substr($field, $char_index, 1, $inputEncoding);
-				if (strcmp($char, $enclosure) === 0) {
-					$csv_field .= $escape;
-				}
-				$csv_field .= $char;
-			}
-			$csv_field = $enclosure . $csv_field . $enclosure;
-		} else {
-			$csv_field = $field;
-		}
+		$line = $this->builder->build($fields,
+			$this->config->get('delimiter'),
+			$this->config->get('enclosure'),
+			$this->config->get('escape'),
+			$this->config->get('enclose'),
+			$inputEncoding
+		);
 
 		if (isset($outputEncoding)) {
 			if (!isset($inputEncoding)) {
-				$csv_field = mb_convert_encoding($csv_field, $outputEncoding, 'auto');
+				$line = mb_convert_encoding($line, $outputEncoding, 'auto');
 			} elseif (strcmp($outputEncoding, $inputEncoding) !== 0) {
-				$csv_field = mb_convert_encoding($csv_field, $outputEncoding, $inputEncoding);
+				$line = mb_convert_encoding($line, $outputEncoding, $inputEncoding);
 			}
 		}
 
-		return $csv_field;
-	}
-
-	/**
-	 * CSVのフィールドを設定します。
-	 *
-	 * @param int    フィールドインデックス
-	 * @param string フィールド名
-	 * @param callable フィールドの値を生成するコールバック
-	 * @return $this
-	 */
-	public function field($index, $filter = null, $name = null)
-	{
-		if (isset($filter)) {
-			$this->fieldFilter($index, $filter);
-		}
-		if (isset($name)) {
-			$this->fieldName($index, $name);
-		}
-		return $this;
-	}
-
-	/**
-	 * CSVフィールドを追加します。
-	 *
-	 * @param callable レコードフィルタ
-	 * @return $this
-	 */
-	public function appendField($filter = null, $name = null)
-	{
-		$this->field(count($this->fieldFilters), $filter, $name);
-		return $this;
+		return $line . $this->config->get('newLine');
 	}
 
 	/**
@@ -256,18 +185,18 @@ class Writer
 	 * @param string フィールド名
 	 * @return mixed 設定値 または $this
 	 */
-	public function fieldName($index)
+	public function label($index)
 	{
 		switch (func_num_args()) {
 		case 1:
-			return $this->fieldNames->get($index);
+			return $this->labels->get($index);
 		case 2:
 			$name = func_get_arg(1);
 			if (!is_string($name)) {
 				throw new \InvalidArgumentException(
-					sprintf('The fieldName for index:%d is not a string.', $index));
+					sprintf('The label for index:%d is not a string.', $index));
 			}
-			$this->fieldNames->define($index, $name);
+			$this->labels->define($index, $name);
 			return $this;
 		}
 		throw new \InvalidArgumentException('Invalid argument count.');
@@ -280,32 +209,36 @@ class Writer
 	 */
 	public function buildHeaderLine()
 	{
-		return $this->buildLine($this->fieldNames->getIterator());
+		return $this->build($this->labels->getIterator());
 	}
 
 	/**
-	 * 引数1の場合は指定されたフィールドインデックスのフィルタを返します。
-	 * 引数2の場合は指定されたフィールドインデックスのフィルタをセットして$thisを返します。
+	 * CSVのフィールドを設定します。
 	 *
-	 * @param int      フィールドインデックス
-	 * @param callable フィールドフィルタ
-	 * @return mixed 設定値 または $this
+	 * @param mixed  int             フィールドインデックス
+	 * @param mixed  string|callable フィールドの列名 または 値を生成するコールバック
+	 * @param string フィールド名
+	 * @return $this
 	 */
-	public function fieldFilter($index)
+	public function field($index, $filter = null, $name = null)
 	{
-		switch (func_num_args()) {
-		case 1:
-			return $this->fieldFilters->get($index);
-		case 2:
-			$filter = func_get_arg(1);
-			if (!is_callable($filter)) {
-				throw new \InvalidArgumentException(
-					sprintf('The fieldFilter for index:%d is not a callable.', $index));
-			}
-			$this->fieldFilters->define($index, $filter);
-			return $this;
+
+		if (!isset($filter)) {
+			$filter = (string)$index;
 		}
-		throw new \InvalidArgumentException('Invalid argument count.');
+
+		if (!is_string($filter) && !is_callable($filter)) {
+			throw new \InvalidArgumentException(
+				sprintf('The filter for index:%d accepts string or callable.', $index));
+		}
+
+		$this->fields->define($index, $filter);
+
+		if (isset($name)) {
+			$this->label($index, $name);
+		}
+
+		return $this;
 	}
 
 	/**
@@ -319,21 +252,53 @@ class Writer
 
 		if (!is_array($record) && !($record instanceof \ArrayAccess)) {
 			throw new \InvalidArgumentException(
-				sprintf('The record accepts an array or Traversable. invalid type:"%s"', gettype($record)));
+				sprintf('The record accepts an array or ArrayAccess. invalid type:"%s"', gettype($record)));
 		}
 
 		$fields = array();
-		foreach ($this->fieldNames->keys() as $index) {
+		foreach ($this->fields as $filter) {
 			$field = null;
-			if ($this->fieldFilters->has($index)) {
-				$filter = $this->fieldFilters->get($index);
-				$field = $filter($record);
+			if (is_string($filter)) {
+				if (isset($record[$filter])) {
+					$field = $record[$filter];
+				}
 			} else {
-				$field = $record[$index];
+				$field = $filter($record);
 			}
 			$fields[] = $field;
 		}
 		return $fields;
+	}
+
+	/**
+	 * CSVのフィールドを配列から設定します。
+	 *
+	 * @param array  フィールド設定の配列
+	 * @return $this
+	 */
+	public function fields($fields)
+	{
+
+		if (!is_array($fields) && !($fields instanceof \Traversable)) {
+			throw new \InvalidArgumentException(
+				sprintf('Fields accepts an array or Traversable. invalid type:"%s"', gettype($fields)));
+		}
+
+		foreach ($fields as $index => $field) {
+			if (is_string($field)) {
+				$this->field($index, $field);
+			} else if (is_array($field)) {
+				$this->field($index,
+					(isset($field[0])) ? $field[0] : null,
+					(isset($field[1])) ? $field[1] : null
+				);
+			} else {
+				throw new \InvalidArgumentException(
+					sprintf('Field accepts a string or an array. invalid type:"%s"', gettype($field)));
+			}
+		}
+
+		return $this;
 	}
 
 	/**
@@ -344,7 +309,7 @@ class Writer
 	 */
 	public function buildContentLine($record)
 	{
-		return $this->buildLine($this->buildFields($record));
+		return $this->build($this->buildFields($record));
 	}
 
 	/**

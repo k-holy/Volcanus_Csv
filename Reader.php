@@ -179,13 +179,12 @@ class Reader
 	}
 
 	/**
-	 * フィールドの設定を元にフィールド配列を1レコード分の配列に変換して返します。
-	 * レコードフィルタが登録済みであれば、実行します。
+	 * 1レコード分の配列に全てのフィルタを実行した結果を返します。
 	 *
 	 * @param mixed array | ArrayAccess フィールド配列
 	 * @return array 1レコード分の配列
 	 */
-	public function buildRecord($fields)
+	public function applyFilters($fields)
 	{
 
 		if (!is_array($fields) && !($fields instanceof \ArrayAccess)) {
@@ -206,7 +205,7 @@ class Reader
 	 * CSV1レコード分の文字列を配列に変換して返します。
 	 *
 	 * 以下の順に処理されます。
-	 * (1)行末のCRLFおよびNULLバイトを削除
+	 * (1)復帰・改行・水平タブ・スペース以外の制御コードを削除
 	 * (2)出力エンコーディングへの変換
 	 * (3)区切り文字・囲み文字・エスケープ文字を解析して文字列から配列に変換
 	 *
@@ -218,7 +217,7 @@ class Reader
 		$outputEncoding = $this->config->get('outputEncoding');
 		$inputEncoding = $this->config->get('inputEncoding');
 
-		$line = rtrim($line, "\x0A\x0D\x00");
+		$line = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]+/S', '', $line);
 
 		if (isset($outputEncoding)) {
 			if (!isset($inputEncoding)) {
@@ -265,7 +264,7 @@ class Reader
 	}
 
 	/**
-	 * データをCSVに変換してファイルに出力します。
+	 * 1件分のCSVデータをファイルから読み込んで処理します。
 	 *
 	 * @return mixed array | Traversable レコード
 	 */
@@ -280,7 +279,11 @@ class Reader
 			$this->file->seek(1);
 		}
 
-		return $this->buildRecord($this->convert($this->file->current()));
+		$record = $this->applyFilters($this->convert($this->file->current()));
+
+		$this->file->next();
+
+		return $record;
 	}
 
 	/**

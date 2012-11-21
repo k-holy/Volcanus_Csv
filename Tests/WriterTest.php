@@ -258,90 +258,21 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 		$writer->responseFilename = array();
 	}
 
-	public function testBuildField()
-	{
-		$writer = new Writer();
-		$field = '田中';
-		$this->assertEquals("田中", $writer->buildField($field));
-	}
-
-	public function testBuildFieldIncludesDelimiter()
-	{
-		$writer = new Writer();
-		$field = '田中,';
-		$this->assertEquals("\"田中,\"", $writer->buildField($field));
-	}
-
-	public function testBuildFieldIncludesCarriageReturnAndLineFeed()
-	{
-		$writer = new Writer();
-		$field = "田中\r\n\r\n以上";
-		$this->assertEquals("\"田中\r\n\r\n以上\"", $writer->buildField($field));
-	}
-
-	public function testBuildFieldIncludesCarriageReturn()
-	{
-		$writer = new Writer();
-		$field = "田中\r\r以上";
-		$this->assertEquals("\"田中\r\r以上\"", $writer->buildField($field));
-	}
-
-	public function testBuildFieldIncludesLineFeed()
-	{
-		$writer = new Writer();
-		$field = "田中\n\n以上";
-		$this->assertEquals("\"田中\n\n以上\"", $writer->buildField($field));
-	}
-
-	public function testBuildFieldEscapeIncludesEnclosure()
-	{
-		$writer = new Writer();
-		$field = '田中"';
-		$this->assertEquals('"田中"""', $writer->buildField($field));
-
-		$writer->enclosure = '"';
-		$writer->escape = '\\';
-		$this->assertEquals('"田中\""', $writer->buildField($field));
-	}
-
-	public function testBuildFieldEscapeIncludesRepetitionOfEnclosure()
-	{
-		$writer = new Writer();
-		$field = '"田"中""';
-		$this->assertEquals('"""田""中"""""', $writer->buildField($field));
-
-		$writer->enclosure = '"';
-		$writer->escape = '\\';
-		$this->assertEquals('"\"田\"中\"\""', $writer->buildField($field));
-	}
-
-	public function testBuildFieldWithEncoding()
-	{
-		$writer = new Writer();
-		$writer->inputEncoding = 'UTF-8';
-		$writer->outputEncoding = 'SJIS';
-		$field = 'ソ十貼能表暴予';
-		$this->assertEquals(
-			mb_convert_encoding($field, 'SJIS', 'UTF-8'),
-			$writer->buildField($field)
-		);
-	}
-
-	public function testBuildLine()
+	public function testBuild()
 	{
 		$writer = new Writer();
 		$this->assertEquals("1,田中\r\n",
-			$writer->buildLine(array('1', '田中')));
+			$writer->build(array('1', '田中')));
 	}
 
-	public function testBuildLineIncludesDelimiter()
+	public function testBuildIncludesDelimiter()
 	{
 		$writer = new Writer();
 		$this->assertEquals("1,\"田中,\"\r\n",
-			$writer->buildLine(array('1', '田中,')));
+			$writer->build(array('1', '田中,')));
 	}
 
-	public function testBuildLineWithEncoding()
+	public function testBuildWithEncoding()
 	{
 		$writer = new Writer();
 		$writer->inputEncoding = 'UTF-8';
@@ -349,93 +280,118 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 		$fields = array('1', 'ソ十貼能表暴予');
 		$this->assertEquals(
 			mb_convert_encoding("1,ソ十貼能表暴予\r\n", 'SJIS', 'UTF-8'),
-			$writer->buildLine($fields)
+			$writer->build($fields)
 		);
 	}
 
-	public function testBuildLineWithEnclose()
+	public function testBuildWithEnclose()
 	{
 		$writer = new Writer();
 		$writer->enclose = true;
 		$this->assertEquals("\"1\",\"田中\"\r\n",
-			$writer->buildLine(array('1', '田中')));
+			$writer->build(array('1', '田中')));
 	}
 
-	public function testFieldName()
+	public function testLabel()
 	{
 		$writer = new Writer();
-		$writer->fieldName(0, 'ユーザーID');
-		$writer->fieldName(1, 'ユーザー名');
-		$this->assertEquals('ユーザーID', $writer->fieldName(0));
-		$this->assertEquals('ユーザー名', $writer->fieldName(1));
+		$writer->label(0, 'ユーザーID');
+		$writer->label(1, 'ユーザー名');
+		$this->assertEquals('ユーザーID', $writer->label(0));
+		$this->assertEquals('ユーザー名', $writer->label(1));
 	}
 
 	public function testBuildHeaderLine()
 	{
 		$writer = new Writer();
-		$writer->fieldName(0, 'ユーザーID');
-		$writer->fieldName(1, 'ユーザー名');
+		$writer->label(0, 'ユーザーID');
+		$writer->label(1, 'ユーザー名');
 		$this->assertEquals("ユーザーID,ユーザー名\r\n", $writer->buildHeaderLine());
 	}
 
-	public function testFieldFilter()
+	public function testFieldAndBuildFields()
 	{
 		$writer = new Writer();
-		$filter1 = function($item) {
-			return $item['surname'] . $item['firstname'];
-		};
-		$filter2 = function($item) {
-			return (isset($item['age'])) ? $item['age'] : '不詳';
-		};
-		$writer->fieldFilter(0, $filter1);
-		$writer->fieldFilter(1, $filter2);
-		$this->assertEquals($filter1, $writer->fieldFilter(0));
-		$this->assertEquals($filter2, $writer->fieldFilter(1));
+		$writer->field(0, 'surname');
+		$writer->field(1, 'firstname');
+		$writer->field(2, 'age');
+		$this->assertEquals(array('田中', '一郎', '22'),
+			$writer->buildFields(array(
+				'id'        => '1',
+				'surname'   => '田中',
+				'firstname' => '一郎',
+				'age'       => '22',
+			))
+		);
+		$this->assertEquals(array('山田', '花子', null),
+			$writer->buildFields(array(
+				'id'        => '2',
+				'surname'   => '山田',
+				'firstname' => '花子',
+			))
+		);
 	}
 
-	public function testField()
+	public function testFieldAndBuildContentLine()
 	{
 		$writer = new Writer();
-		$filter1 = function($item) {
-			return $item['surname'] . $item['firstname'];
-		};
-		$filter2 = function($item) {
-			return (isset($item['age'])) ? $item['age'] : '不詳';
-		};
-		$writer->field(0, $filter1, 'ユーザー名');
-		$writer->field(1, $filter2, '年齢');
-		$this->assertEquals('ユーザー名', $writer->fieldName(0));
-		$this->assertEquals('年齢'      , $writer->fieldName(1));
-		$this->assertEquals($filter1, $writer->fieldFilter(0));
-		$this->assertEquals($filter2, $writer->fieldFilter(1));
+		$writer->field(0, 'surname');
+		$writer->field(1, 'firstname');
+		$writer->field(2, 'age');
+		$this->assertEquals("田中,一郎,22\r\n",
+			$writer->buildContentLine(array(
+				'id'        => '1',
+				'surname'   => '田中',
+				'firstname' => '一郎',
+				'age'       => '22',
+			))
+		);
+		$this->assertEquals("山田,花子,\r\n",
+			$writer->buildContentLine(array(
+				'id'        => '2',
+				'surname'   => '山田',
+				'firstname' => '花子',
+			))
+		);
 	}
 
-	public function testAppendField()
+	public function testFieldWithLabel()
 	{
 		$writer = new Writer();
-		$filter1 = function($item) {
-			return $item['surname'] . $item['firstname'];
-		};
-		$filter2 = function($item) {
-			return (isset($item['age'])) ? $item['age'] : '不詳';
-		};
-		$writer->appendField($filter1, 'ユーザー名');
-		$writer->appendField($filter2, '年齢' );
-		$this->assertEquals('ユーザー名', $writer->fieldName(0));
-		$this->assertEquals('年齢'      , $writer->fieldName(1));
-		$this->assertEquals($filter1, $writer->fieldFilter(0));
-		$this->assertEquals($filter2, $writer->fieldFilter(1));
+		$writer->field(0, 'surname'  , '姓');
+		$writer->field(1, 'firstname', '名');
+		$writer->field(2, 'age'      , '年齢');
+		$this->assertEquals('姓'  , $writer->label(0));
+		$this->assertEquals('名'  , $writer->label(1));
+		$this->assertEquals('年齢', $writer->label(2));
 	}
 
-	public function testBuildFields()
+	public function testFieldsWithLabel()
 	{
 		$writer = new Writer();
-		$writer->appendField(function($item) {
-			return $item['surname'] . $item['firstname'];
-		}, 'ユーザー名');
-		$writer->appendField(function($item) {
-			return (isset($item['age'])) ? $item['age'] : '不詳';
-		}, '年齢');
+		$writer->fields(array(
+			array('surname'  , '姓'),
+			array('firstname', '名'),
+			array('age'      , '年齢'),
+		));
+		$this->assertEquals('姓'  , $writer->label(0));
+		$this->assertEquals('名'  , $writer->label(1));
+		$this->assertEquals('年齢', $writer->label(2));
+	}
+
+	public function testFieldsAndBuildFieldsWithCallback()
+	{
+		$writer = new Writer();
+		$writer->fields(array(
+			array(function($item) {
+					return $item['surname'] . $item['firstname'];
+				}, 'ユーザー名'
+			),
+			array(function($item) {
+					return (isset($item['age'])) ? $item['age'] : '不詳';
+				}, '年齢'
+			)
+		));
 		$this->assertEquals(array('田中一郎', '22'),
 			$writer->buildFields(array(
 				'id'        => '1',
@@ -451,30 +407,6 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 				'firstname' => '花子',
 			))
 		);
-	}
-
-	public function testBuildContentLine()
-	{
-		$writer = new Writer();
-		$writer->appendField(function($item) {
-			return $item['surname'] . $item['firstname'];
-		}, 'ユーザー名');
-		$writer->appendField(function($item) {
-			return (isset($item['age'])) ? $item['age'] : '不詳';
-		}, '年齢');
-		$this->assertEquals("田中一郎,22\r\n",
-			$writer->buildContentLine(array(
-				'id'        => '1',
-				'surname'   => '田中',
-				'firstname' => '一郎',
-				'age'       => '22',
-		)));
-		$this->assertEquals("山田花子,不詳\r\n",
-			$writer->buildContentLine(array(
-				'id'        => '2',
-				'surname'   => '山田',
-				'firstname' => '花子',
-		)));
 	}
 
 	public function testOpen()
@@ -494,8 +426,8 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 	public function testWrite()
 	{
 		$writer = new Writer();
-		$writer->fieldName(0, 'ユーザーID');
-		$writer->fieldName(1, 'ユーザー名');
+		$writer->field(0);
+		$writer->field(1);
 		$writer->open('php://memory');
 		$writer->write(array(
 			array('1', '田中'),
@@ -506,8 +438,8 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 	public function testWriteWithHeaderLine()
 	{
 		$writer = new Writer();
-		$writer->fieldName(0, 'ユーザーID');
-		$writer->fieldName(1, 'ユーザー名');
+		$writer->label(0, 'ユーザーID');
+		$writer->label(1, 'ユーザー名');
 		$writer->open('php://memory');
 		$writer->writeHeaderLine = true;
 		$writer->write(array(

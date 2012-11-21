@@ -27,11 +27,23 @@ class Parser
 	 * @param string フィールドに含まれる囲み文字のエスケープ文字
 	 * @return mixed CSV1レコード分の配列
 	 */
-	public function parse($line, $delimiter, $enclosure, $escape)
+	public function parse($line, $delimiter = null, $enclosure = null, $escape = null)
 	{
 
-		// 正規表現パターン簡略化のため行末にデリミタを付与
-		$line = preg_replace('/(?:\x0D\x0A|[\x0D\x0A])?$/', $delimiter, $line);
+		if (!isset($delimiter)) {
+			$delimiter = ',';
+		}
+
+		if (!isset($enclosure)) {
+			$enclosure = '"';
+		}
+
+		if (!isset($escape)) {
+			$escape = '"';
+		}
+
+		// 行末の復帰・改行を削除し、正規表現パターン簡略化のためデリミタを付与
+		$line = preg_replace('/(?:\x0D\x0A|[\x0D\x0A])?$/', $delimiter, rtrim($line, "\x0A\x0D"));
 
 		$delimiter_quoted = preg_quote($delimiter);
 		$enclosure_quoted = preg_quote($enclosure);
