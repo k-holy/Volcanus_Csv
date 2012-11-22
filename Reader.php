@@ -239,15 +239,15 @@ class Reader
 	}
 
 	/**
-	 * ファイルを開きます。
+	 * ファイルオブジェクトをセットします。
 	 *
-	 * @param string ファイル名
-	 * @return object SplFileObject
+	 * @param SplFileObject
+	 * @return $this
 	 */
-	public function open($filename)
+	public function setFile(\SplFileObject $file)
 	{
-		$this->file = new \SplFileObject($filename, 'r+');
-		return $this->file;
+		$this->file = $file;
+		return $this;
 	}
 
 	/**

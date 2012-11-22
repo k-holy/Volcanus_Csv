@@ -447,16 +447,11 @@ class ReaderTest extends \PHPUnit_Framework_TestCase
 			$reader->convert('1,ソ十貼能表暴予'));
 	}
 
-	public function testOpen()
+	public function testSetFile()
 	{
 		$reader = new Reader();
-		$this->assertInstanceOf('\SplFileObject', $reader->open('php://memory'));
-	}
-
-	public function testGetFile()
-	{
-		$reader = new Reader();
-		$file = $reader->open('php://memory');
+		$file = new \SplFileObject('php://memory', '+r');
+		$reader->setFile($file);
 		$this->assertSame($file, $reader->getFile());
 		$this->assertSame($file, $reader->file);
 	}
@@ -464,7 +459,7 @@ class ReaderTest extends \PHPUnit_Framework_TestCase
 	public function testFetch()
 	{
 		$reader = new Reader();
-		$reader->open('php://memory');
+		$reader->file = new \SplFileObject('php://memory', '+r');
 		$reader->file->fwrite("1,田中\r\n");
 		$reader->file->rewind();
 
@@ -475,7 +470,7 @@ class ReaderTest extends \PHPUnit_Framework_TestCase
 	public function testFetchWithSkipHeaderLine()
 	{
 		$reader = new Reader();
-		$reader->open('php://memory');
+		$reader->file = new \SplFileObject('php://memory', '+r');
 		$reader->file->fwrite("ユーザーID,ユーザー名\r\n");
 		$reader->file->fwrite("1,田中\r\n");
 		$reader->file->rewind();
@@ -489,7 +484,7 @@ class ReaderTest extends \PHPUnit_Framework_TestCase
 	public function testFetchWithFilter()
 	{
 		$reader = new Reader();
-		$reader->open('php://memory');
+		$reader->file = new \SplFileObject('php://memory', '+r');
 		$reader->file->fwrite("1,田中,一郎,22\r\n");
 		$reader->file->fwrite("2,山田,老人,91\r\n");
 		$reader->file->fwrite("3,田中,次郎,45\r\n");
@@ -537,7 +532,7 @@ class ReaderTest extends \PHPUnit_Framework_TestCase
 	public function testFetchWithFilterAndEncoding()
 	{
 		$reader = new Reader();
-		$reader->open('php://memory');
+		$reader->file = new \SplFileObject('php://memory', '+r');
 		$reader->file->fwrite("1,ソ十貼能表暴予\r\n");
 		$reader->file->rewind();
 
@@ -559,7 +554,7 @@ class ReaderTest extends \PHPUnit_Framework_TestCase
 	public function testFetchWithSkipHeaderLineAndSomeFilters()
 	{
 		$reader = new Reader();
-		$reader->open('php://memory');
+		$reader->file = new \SplFileObject('php://memory', '+r');
 		$reader->file->fwrite("ユーザーID,姓,名,年齢\r\n");
 		$reader->file->fwrite("1,田中,一郎,22\r\n");
 		$reader->file->fwrite("2,山田,老人,91\r\n");

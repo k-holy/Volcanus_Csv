@@ -409,16 +409,11 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
-	public function testOpen()
+	public function testSetFile()
 	{
 		$writer = new Writer();
-		$this->assertInstanceOf('\SplFileInfo', $writer->open('php://memory'));
-	}
-
-	public function testGetFile()
-	{
-		$writer = new Writer();
-		$file = $writer->open('php://memory');
+		$file = new \SplFileObject('php://memory', 'r+');
+		$writer->setFile($file);
 		$this->assertSame($file, $writer->getFile());
 		$this->assertSame($file, $writer->file);
 	}
@@ -428,7 +423,7 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 		$writer = new Writer();
 		$writer->field(0);
 		$writer->field(1);
-		$writer->open('php://memory');
+		$writer->file = new \SplFileObject('php://memory', '+r');
 		$writer->write(array(
 			array('1', '田中'),
 		));
@@ -440,7 +435,7 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 		$writer = new Writer();
 		$writer->label(0, 'ユーザーID');
 		$writer->label(1, 'ユーザー名');
-		$writer->open('php://memory');
+		$writer->file = new \SplFileObject('php://memory', '+r');
 		$writer->writeHeaderLine = true;
 		$writer->write(array(
 			array('1', '田中'),
@@ -451,7 +446,7 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 	public function testBuildResponseHeaders()
 	{
 		$writer = new Writer();
-		$writer->open('php://memory');
+		$writer->file = new \SplFileObject('php://memory', '+r');
 		$writer->write(array(
 			array('1', '田中'),
 		));
@@ -464,7 +459,7 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 	public function testBuildResponseHeadersWithResponseFilename()
 	{
 		$writer = new Writer();
-		$writer->open('php://memory');
+		$writer->file = new \SplFileObject('php://memory', '+r');
 		$writer->write(array(
 			array('1', '田中'),
 		));
@@ -478,7 +473,7 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 	public function testBuildResponseHeadersWithMultibyteResponseFilename()
 	{
 		$writer = new Writer();
-		$writer->open('php://memory');
+		$writer->file = new \SplFileObject('php://memory', '+r');
 		$writer->write(array(
 			array('1', '田中'),
 		));
