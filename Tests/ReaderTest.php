@@ -206,6 +206,22 @@ class ReaderTest extends \PHPUnit_Framework_TestCase
 		$reader->skipHeaderLine = 'true';
 	}
 
+	public function testSetSkipEmptyLine()
+	{
+		$reader = new Reader();
+		$reader->skipEmptyLine = true;
+ 		$this->assertTrue($reader->skipEmptyLine);
+	}
+
+	/**
+	 * @expectedException \InvalidArgumentException
+	 */
+	public function testSetSkipEmptyLineRaiseInvalidArgumentException()
+	{
+		$reader = new Reader();
+		$reader->skipEmptyLine = 'true';
+	}
+
 	public function testSetParseByPcre()
 	{
 		$reader = new Reader();
@@ -456,28 +472,34 @@ class ReaderTest extends \PHPUnit_Framework_TestCase
 		$this->assertSame($file, $reader->file);
 	}
 
+	/**
+	 * @expectedException \InvalidArgumentException
+	 */
+	public function testSetFileRaiseInvalidArgumentException()
+	{
+		$reader = new Reader();
+		$reader->setFile(array());
+	}
+
 	public function testFetch()
 	{
 		$reader = new Reader();
 		$reader->file = new \SplFileObject('php://memory', '+r');
-		$reader->file->fwrite("1,田中\r\n");
+		$reader->file->fwrite("1,田中,一郎,22\r\n");
 		$reader->file->rewind();
 
-		$this->assertEquals(array('1', '田中'),
+		$this->assertEquals(array('1', '田中', '一郎', '22'),
 			$reader->fetch());
 	}
 
-	public function testFetchWithSkipHeaderLine()
+	public function testFetchEnclosedCarriageReturnAndLineFeed()
 	{
 		$reader = new Reader();
 		$reader->file = new \SplFileObject('php://memory', '+r');
-		$reader->file->fwrite("ユーザーID,ユーザー名\r\n");
-		$reader->file->fwrite("1,田中\r\n");
+		$reader->file->fwrite("1,\"田\r\n中\",\"一\r\n郎\",22\r\n");
 		$reader->file->rewind();
 
-		$reader->skipHeaderLine = true;
-
-		$this->assertEquals(array('1', '田中'),
+		$this->assertEquals(array('1', "田\r\n中", "一\r\n郎", '22'),
 			$reader->fetch());
 	}
 
@@ -551,11 +573,10 @@ class ReaderTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals(mb_convert_encoding('ソ十貼能表暴予', 'SJIS', 'UTF-8'), $test->text);
 	}
 
-	public function testFetchWithSkipHeaderLineAndSomeFilters()
+	public function testFetchWithSomeFilters()
 	{
 		$reader = new Reader();
 		$reader->file = new \SplFileObject('php://memory', '+r');
-		$reader->file->fwrite("ユーザーID,姓,名,年齢\r\n");
 		$reader->file->fwrite("1,田中,一郎,22\r\n");
 		$reader->file->fwrite("2,山田,老人,91\r\n");
 		$reader->file->fwrite("3,田中,次郎,45\r\n");
@@ -577,8 +598,6 @@ class ReaderTest extends \PHPUnit_Framework_TestCase
 			}
 			return false;
 		});
-
-		$reader->skipHeaderLine = true;
 
 		// 1st record
 		$elder = $reader->fetch();
@@ -602,6 +621,70 @@ class ReaderTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals('ウメ', $elder->firstname);
 		$this->assertGreaterThan(90, $elder->age);
 
+	}
+	public function testFetchAll()
+	{
+		$reader = new Reader();
+		$reader->file = new \SplFileObject('php://memory', '+r');
+		$reader->file->fwrite("1,田中\r\n");
+		$reader->file->fwrite("2,山田\r\n");
+		$reader->file->fwrite("3,鈴木\r\n");
+		$reader->file->rewind();
+
+		$records = $reader->fetchAll();
+		$this->assertEquals(array('1', '田中'), $records[0]);
+		$this->assertEquals(array('2', '山田'), $records[1]);
+		$this->assertEquals(array('3', '鈴木'), $records[2]);
+	}
+
+	public function testFetchAllWithSkipHeaderLine()
+	{
+		$reader = new Reader();
+		$reader->file = new \SplFileObject('php://memory', '+r');
+		$reader->file->fwrite("ユーザーID,ユーザー名\r\n");
+		$reader->file->fwrite("1,田中\r\n");
+		$reader->file->fwrite("2,山田\r\n");
+		$reader->file->fwrite("3,鈴木\r\n");
+		$reader->file->rewind();
+
+		$reader->skipHeaderLine = false;
+		$records = $reader->fetchAll();
+		$this->assertEquals(array('ユーザーID', 'ユーザー名'), $records[0]);
+		$this->assertEquals(array('1', '田中'), $records[1]);
+		$this->assertEquals(array('2', '山田'), $records[2]);
+		$this->assertEquals(array('3', '鈴木'), $records[3]);
+
+		$reader->skipHeaderLine = true;
+		$records = $reader->fetchAll();
+		$this->assertEquals(array('1', '田中'), $records[0]);
+		$this->assertEquals(array('2', '山田'), $records[1]);
+		$this->assertEquals(array('3', '鈴木'), $records[2]);
+	}
+
+	public function testFetchAllWithSkipEmptyLine()
+	{
+		$reader = new Reader();
+		$reader->file = new \SplFileObject('php://memory', '+r');
+		$reader->file->fwrite("1,田中\r\n");
+		$reader->file->fwrite("\r\n");
+		$reader->file->fwrite("2,山田\r\n");
+		$reader->file->fwrite("3,鈴木\r\n");
+		$reader->file->fwrite("\r\n");
+		$reader->file->rewind();
+
+		$reader->skipEmptyLine = false;
+		$records = $reader->fetchAll();
+		$this->assertEquals(array('1', '田中'), $records[0]);
+		$this->assertEquals(array(''), $records[1]);
+		$this->assertEquals(array('2', '山田'), $records[2]);
+		$this->assertEquals(array('3', '鈴木'), $records[3]);
+		$this->assertEquals(array(''), $records[4]);
+
+		$reader->skipEmptyLine = true;
+		$records = $reader->fetchAll();
+		$this->assertEquals(array('1', '田中'), $records[0]);
+		$this->assertEquals(array('2', '山田'), $records[1]);
+		$this->assertEquals(array('3', '鈴木'), $records[2]);
 	}
 
 }

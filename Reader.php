@@ -62,6 +62,7 @@ class Reader
 			'inputEncoding'  => mb_internal_encoding(),
 			'outputEncoding' => mb_internal_encoding(),
 			'skipHeaderLine' => false,
+			'skipEmptyLine'  => false,
 			'parseByPcre'    => true,
 		));
 		if (!empty($configurations)) {
@@ -83,6 +84,7 @@ class Reader
 	 * inputEncoding   : 入力文字コード（CSVファイルの文字コード）
 	 * outputEncoding  : 出力文字コード（データの文字コード）
 	 * skipHeaderLine  : ヘッダ行を無視するかどうか
+	 * skipEmptyLine   : 空行（改行コードだけの行）を無視するかどうか
 	 * parseByPcre     : PCRE関数による独自のCSV解析処理を行うかどうか
 	 *
 	 * str_getcsv() には delimiter と escape に異なる文字を指定しても delimiter が
@@ -117,6 +119,7 @@ class Reader
 					}
 					break;
 				case 'skipHeaderLine':
+				case 'skipEmptyLine':
 				case 'parseByPcre':
 					if (is_int($value) || ctype_digit($value)) {
 						$value = (bool)$value;
@@ -244,8 +247,13 @@ class Reader
 	 * @param SplFileObject
 	 * @return $this
 	 */
-	public function setFile(\SplFileObject $file)
+	public function setFile($file)
 	{
+		if (!$file instanceof \SplFileObject) {
+			throw new \InvalidArgumentException(
+				sprintf('The file accepts a instanceof SplFileObject. invalid type:"%s"', gettype($file)));
+		}
+
 		$this->file = $file;
 		return $this;
 	}
@@ -264,7 +272,8 @@ class Reader
 	}
 
 	/**
-	 * 1件分のCSVデータをファイルから読み込んで処理します。
+	 * 1件分のCSVデータを現在のインデックスから読み込んで処理します。
+	 * 囲み文字があれば、次の囲み文字までまとめて読み込みます。
 	 *
 	 * @return mixed array | Traversable レコード
 	 */
@@ -275,15 +284,50 @@ class Reader
 			throw new \RuntimeException('File is not open.');
 		}
 
-		if ($this->config('skipHeaderLine') && $this->file->key() === 0) {
-			$this->file->seek(1);
+		$enclosure = $this->config->get('enclosure');
+		$endOfLine = false;
+		$line = '';
+
+		while (!$endOfLine && !$this->file->eof()) {
+			$line .= $this->file->fgets();
+			if (substr_count($line, $enclosure) % 2 === 0) {
+				$endOfLine = true;
+			}
 		}
 
-		$record = $this->applyFilters($this->convert($this->file->current()));
+		$fields = $this->applyFilters($this->convert($line));
 
-		$this->file->next();
+		return $fields;
+	}
 
-		return $record;
+	/**
+	 * CSVデータをファイルから読み込んで処理します。
+	 *
+	 * @return boolean
+	 */
+	public function fetchAll()
+	{
+
+		if (!isset($this->file)) {
+			throw new \RuntimeException('File is not open.');
+		}
+
+		$this->file->rewind();
+
+		$records = array();
+		$index = 0;
+
+		while (!$this->file->eof()) {
+			$fields = $this->fetch();
+			if ($index > 0 || !$this->config('skipHeaderLine')) {
+				if ((isset($fields[0]) && strlen($fields[0]) >= 1) || !$this->config('skipEmptyLine')) {
+					$records[] = $fields;
+				}
+			}
+			$index++;
+		}
+
+		return $records;
 	}
 
 	/**
