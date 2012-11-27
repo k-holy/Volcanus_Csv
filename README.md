@@ -110,20 +110,17 @@ SplFileObjectを前提としていますが、CSVの加工は独自の処理を�
 
 	$writer->file = file;
 
-	$content = <<< CONTENT
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8" />
-</head>
-<body>
-<ul>%s</ul>
-</body>
-</html>
-CONTENT;
-
 	// CSVファイルを読み込んでHTML出力
-	echo sprintf($content,
+	echo sprintf('
+		<!DOCTYPE html>
+		<html>
+		<head>
+		<meta charset="utf-8" />
+		</head>
+		<body>
+		<ul>%s</ul>
+		</body>
+		</html>',
 		implode("\n", $reader->fetchAll())
 	));
 
