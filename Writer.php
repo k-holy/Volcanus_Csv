@@ -147,10 +147,11 @@ class Writer
 	}
 
 	/**
-	 * 1レコード分のフィールド配列をCSV形式の文字列に変換して返します。
+	 * 1レコード分のフィールド配列をCSV形式の文字列に変換し、
+	 * 文字コードの変換および改行を付与して返します。
 	 *
 	 * @param array  1レコード分のフィールド配列
-	 * @return string
+	 * @return string CSVの1レコード分の文字列
 	 */
 	public function build($fields) 
 	{

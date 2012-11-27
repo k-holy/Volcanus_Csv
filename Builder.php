@@ -16,9 +16,9 @@ class Builder
 {
 
 	/**
-	 * CSV1レコード分の文字列を配列に変換して返します。(PCRE正規表現版)
+	 * 1レコード分のフィールド配列をCSV形式の文字列に変換して返します。
 	 *
-	 * @param string フィールドの文字列
+	 * @param array フィールドの配列
 	 * @param string フィールドの区切り文字
 	 * @param string フィールドの囲み文字
 	 * @param string フィールドに含まれる囲み文字のエスケープ文字
