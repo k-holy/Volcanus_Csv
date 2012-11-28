@@ -418,7 +418,7 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 		$this->assertSame($file, $writer->file);
 	}
 
-	public function testWrite()
+	public function testWriteAndContent()
 	{
 		$writer = new Writer();
 		$writer->field(0);
@@ -430,7 +430,23 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals("1,田中\r\n", $writer->content());
 	}
 
-	public function testWriteWithHeaderLine()
+	public function testWriteAndFlush()
+	{
+		$writer = new Writer();
+		$writer->field(0);
+		$writer->field(1);
+		$writer->file = new \SplFileObject('php://memory', '+r');
+		$writer->write(array(
+			array('1', '田中'),
+		));
+		ob_start();
+		$writer->flush();
+		$content = ob_get_contents();
+		ob_end_clean();
+		$this->assertEquals("1,田中\r\n", $content);
+	}
+
+	public function testWriteAndContentWithHeaderLine()
 	{
 		$writer = new Writer();
 		$writer->label(0, 'ユーザーID');

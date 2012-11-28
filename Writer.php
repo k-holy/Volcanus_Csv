@@ -333,7 +333,7 @@ class Writer
 	public function getFile()
 	{
 		if (!isset($this->file)) {
-			throw new \RuntimeException('File is not open.');
+			throw new \RuntimeException('File is not set.');
 		}
 		return $this->file;
 	}
@@ -348,7 +348,7 @@ class Writer
 	{
 
 		if (!isset($this->file)) {
-			throw new \RuntimeException('File is not open.');
+			throw new \RuntimeException('File is not set.');
 		}
 
 		if (!is_array($records) && !($records instanceof \Traversable)) {
@@ -367,15 +367,27 @@ class Writer
 	}
 
 	/**
+	 * ファイルに書き込まれたCSVデータの内容を出力します。
+	 */
+	public function flush()
+	{
+		if (!isset($this->file)) {
+			throw new \RuntimeException('File is not set.');
+		}
+		$this->file->rewind();
+		$this->file->fpassthru();
+		$this->file->rewind();
+	}
+
+	/**
 	 * ファイルに書き込まれたCSVデータの内容を返します。
 	 *
 	 * @return string CSVデータの内容
 	 */
 	public function content()
 	{
-		$this->file->rewind();
 		ob_start();
-		$this->file->fpassthru();
+		$this->flush();
 		$content = ob_get_contents();
 		ob_end_clean();
 		return $content;
@@ -388,6 +400,9 @@ class Writer
 	 */
 	public function contentLength()
 	{
+		if (!isset($this->file)) {
+			throw new \RuntimeException('File is not set.');
+		}
 		$status = $this->file->fstat();
 		return $status['size'];
 	}
@@ -400,9 +415,6 @@ class Writer
 	 */
 	public function buildResponseHeaders(array $headers = array())
 	{
-		if (!isset($this->file)) {
-			throw new \RuntimeException('File is not open.');
-		}
 
 		if (!isset($headers['Content-Type'])) {
 			$headers['Content-Type'] = 'application/octet-stream';
@@ -431,17 +443,11 @@ class Writer
 	 */
 	public function send(array $headers = array())
 	{
-		if (!isset($this->file)) {
-			throw new \RuntimeException('File is not open.');
-		}
-
 		$headers = $this->buildResponseHeaders($headers);
 		foreach ($headers as $name => $value) {
 			header(sprintf('%s: %s', $name, $value));
 		}
-
-		$this->file->rewind();
-		$this->file->fpassthru();
+		$this->flush();
 	}
 
 	/**
