@@ -421,7 +421,7 @@ class Writer
 		}
 
 		if (!isset($headers['Content-Disposition'])) {
-			$headers['Content-Disposition'] = 'attachement';
+			$headers['Content-Disposition'] = 'attachment';
 		}
 
 		$filename = $this->config->get('responseFilename');

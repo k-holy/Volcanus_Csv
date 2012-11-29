@@ -468,7 +468,7 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 		));
 		$headers = $writer->buildResponseHeaders();
 		$this->assertEquals($headers['Content-Type'], 'application/octet-stream');
-		$this->assertEquals($headers['Content-Disposition'], 'attachement');
+		$this->assertEquals($headers['Content-Disposition'], 'attachment');
 		$this->assertEquals($headers['Content-Length'], $writer->contentLength());
 	}
 
@@ -482,7 +482,7 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 		$writer->responseFilename = 'test.csv';
 		$headers = $writer->buildResponseHeaders();
 		$this->assertEquals($headers['Content-Type'], 'application/octet-stream; name="test.csv"');
-		$this->assertEquals($headers['Content-Disposition'], 'attachement; filename="test.csv"');
+		$this->assertEquals($headers['Content-Disposition'], 'attachment; filename="test.csv"');
 		$this->assertEquals($headers['Content-Length'], $writer->contentLength());
 	}
 
@@ -498,7 +498,7 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($headers['Content-Type'],
 			sprintf('application/octet-stream; name="%s"', mb_convert_encoding('ソ十貼能表暴予.csv', 'SJIS-win')));
 		$this->assertEquals($headers['Content-Disposition'],
-			sprintf('attachement; filename="%s"', mb_convert_encoding('ソ十貼能表暴予.csv', 'SJIS-win')));
+			sprintf('attachment; filename="%s"', mb_convert_encoding('ソ十貼能表暴予.csv', 'SJIS-win')));
 		$this->assertEquals($headers['Content-Length'], $writer->contentLength());
 	}
 
