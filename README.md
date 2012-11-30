@@ -24,33 +24,35 @@ CSV形式ファイルの入出力処理を簡潔に行うためのPHPクラス�
 * 必要であれば、生成したCSVの内容に合わせたレスポンスヘッダ（Content-Type, Content-Disposition, Content-Length）を出力できます。（ダウンロード時のファイル名も指定できます）
 
 ###使い方
-	<?php
 
-	$file = new \SplFileObject('php://temp', 'r+');
+```php
+<?php
 
-	$writer = \Volcanus\Csv\Writer(array(
-		'inputEncoding'    => 'UTF-8',
-		'outputEncoding'   => 'SJIS',
-		'writeHeaderLine'  => true,
-		'responseFilename' => 'users.csv',
-	));
+$file = new \SplFileObject('php://temp', 'r+');
 
-	$writer->fields(array(
-		array('id'   , 'ユーザーID'),
-		array('name' , '名前'),
-	));
+$writer = \Volcanus\Csv\Writer(array(
+    'inputEncoding'    => 'UTF-8',
+    'outputEncoding'   => 'SJIS',
+    'writeHeaderLine'  => true,
+    'responseFilename' => 'users.csv',
+));
 
-	$db = new \PDO('sqlite:/path/to/database');
-	$statement = $db->query('SELECT id, name FROM users', \PDO::FETCH_ASSOC);
+$writer->fields(array(
+    array('id'   , 'ユーザーID'),
+    array('name' , '名前'),
+));
 
-	// データベースから取得した結果をCSVに変換してファイルに書き込む
-	$writer->file = $file
-	$writer->write($statement);
+$db = new \PDO('sqlite:/path/to/database');
+$statement = $db->query('SELECT id, name FROM users', \PDO::FETCH_ASSOC);
 
-	// レスポンスヘッダとCSVを出力
-	$writer->send();
+// データベースから取得した結果をCSVに変換してファイルに書き込む
+$writer->file = $file
+$writer->write($statement);
 
-	?>
+// レスポンスヘッダとCSVを出力
+$writer->send();
+
+```
 
 ###注意点
 
@@ -66,70 +68,74 @@ SplFileObjectを前提としていますが、CSVの加工は独自の処理を�
 * もちろん、囲み文字による改行を含むフィールドにも対応しています。
 * CSVの入力エンコーディングおよびデータの出力エンコーディングを指定することで、自動でエンコーディング変換されます。
 * SplFileObjectからの入力を前提としており、ファイルシステムの他にも様々な組み込みプロトコル/ラッパーが利用できます。[サポートするプロトコル/ラッパー - Manual](http://jp2.php.net/manual/ja/wrappers.php)
-* 一括読み込み時に、ヘッダ行があるCSVファイルを想定し、1行目を無視するよう設定できます。
-* 一括読み込み時に、空行を無視するかどうかを指定できます。
-* フィルタとして無名関数を指定することで、1レコード分のCSVをフェッチする際に任意の処理を実行できます。たとえば任意のオブジェクトへの変換、バリデーション、データベースへの保存などです。
+* フィルタとして無名関数を指定することで、1レコード分のCSVをフェッチする際に任意の処理を実行できます。任意のオブジェクトへの変換、バリデーション、データベースへの保存などです。
+* 一括読み込み時に、読み込んだCSVレコードの件数と、取得したCSVレコードの件数をそれぞれ参照することができます。これを利用して、フィルタの無名関数において「1件目のデータはヘッダ行とみなして無視」「何件目のデータでエラーが発生したかを通知」といったことが可能です。
 
 ###使い方
-	<?php
 
-	$file = new \SplFileObject('php://temp', 'r+');
+```php
+<?php
 
-	$writer = \Volcanus\Csv\Writer(array(
-		'inputEncoding'    => 'UTF-8',
-		'outputEncoding'   => 'SJIS',
-		'writeHeaderLine'  => true,
-		'responseFilename' => 'users.csv',
-	));
+$file = new \SplFileObject('php://temp', 'r+');
 
-	$writer->fields(array(
-		array('id'   , 'ユーザーID'),
-		array('name' , '名前'),
-	));
+$writer = \Volcanus\Csv\Writer(array(
+    'inputEncoding'    => 'UTF-8',
+    'outputEncoding'   => 'SJIS',
+    'writeHeaderLine'  => true,
+    'responseFilename' => 'users.csv',
+));
 
-	$db = new \PDO('sqlite:/path/to/database');
-	$statement = $db->query('SELECT id, name FROM users', \PDO::FETCH_ASSOC);
+$writer->fields(array(
+    array('id'   , 'ユーザーID'),
+    array('name' , '名前'),
+));
 
-	// データベースから取得した結果をCSVに変換してファイルに書き込む
-	$writer->file = $file
-	$writer->write($statement);
+$db = new \PDO('sqlite:/path/to/database');
+$statement = $db->query('SELECT id, name FROM users', \PDO::FETCH_ASSOC);
 
-	$reader = new \Volcanus\Csv\Reader(array(
-		'inputEncoding'  => 'SJIS',
-		'outputEncoding' => 'UTF-8',
-	));
+// データベースから取得した結果をCSVに変換してファイルに書き込む
+$writer->file = $file
+$writer->write($statement);
 
-	// CSVファイル1レコード毎のフィルタを定義
-	$reader->appendFilter(function($item) use ($reader) {
-		// 1件目はヘッダ行なので無視
-		if ($reader->parsed === 1) {
-			return false;
-		}
-		echo sprintf('<li>[%s]%s</li>',
-			htmlspecialchars($item[0], ENT_QUOTES, 'UTF-8'),
-			htmlspecialchars($item[1], ENT_QUOTES, 'UTF-8')
-		);
-		return $item;
-	});
+$reader = new \Volcanus\Csv\Reader(array(
+    'inputEncoding'  => 'SJIS',
+    'outputEncoding' => 'UTF-8',
+));
 
-	$writer->file = file;
+// CSVファイル1レコード毎のフィルタを定義
+$reader->appendFilter(function($item) use ($reader) {
+    // 1件目はヘッダ行なので除外する。
+    // FALSEを返すとparsedのみカウントされ、fetchedはカウントされない。
+    if ($reader->parsed === 1) {
+        return false;
+    }
+    if ($reader->fetched > 10000) {
+        throw new \RuntimeException('件数多すぎ');
+    }
+    $user = array(
+        'id'   => $item[0],
+        'name' => $item[1],
+    );
+    return sprintf('<li>[%s]%s</li>',
+        htmlspecialchars($item[0], ENT_QUOTES, 'UTF-8'),
+        htmlspecialchars($item[1], ENT_QUOTES, 'UTF-8')
+    );
+});
 
-	// CSVファイルを読み込んでHTML出力
-	echo '<!DOCTYPE html>
-		<html>
-		<head>
-		<meta charset="utf-8" />
-		</head>
-		<body>
-		<ul>';
+$writer->file = file;
 
-	$reader->fetchAll();
+// CSVファイルを読み込んでHTML出力
+echo sprintf('<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+</head>
+<body>
+<ul>%s</ul>
+</body>
+</html>', implode("\n", $reader->fetchAll()));
 
-	echo '</ul>
-		</body>
-		</html>';
-
-	?>
+```
 
 ###注意点
 
