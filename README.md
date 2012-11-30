@@ -97,32 +97,37 @@ SplFileObjectを前提としていますが、CSVの加工は独自の処理を�
 	$reader = new \Volcanus\Csv\Reader(array(
 		'inputEncoding'  => 'SJIS',
 		'outputEncoding' => 'UTF-8',
-		'skipHeaderLine' => true,
 	));
 
 	// CSVファイル1レコード毎のフィルタを定義
-	$reader->appendFilter(function($item) {
-		return sprintf('<li>[%s]%s</li>',
+	$reader->appendFilter(function($item) use ($reader) {
+		// 1件目はヘッダ行なので無視
+		if ($reader->parsed === 1) {
+			return false;
+		}
+		echo sprintf('<li>[%s]%s</li>',
 			htmlspecialchars($item[0], ENT_QUOTES, 'UTF-8'),
 			htmlspecialchars($item[1], ENT_QUOTES, 'UTF-8')
 		);
+		return $item;
 	});
 
 	$writer->file = file;
 
 	// CSVファイルを読み込んでHTML出力
-	echo sprintf('
-		<!DOCTYPE html>
+	echo '<!DOCTYPE html>
 		<html>
 		<head>
 		<meta charset="utf-8" />
 		</head>
 		<body>
-		<ul>%s</ul>
+		<ul>';
+
+	$reader->fetchAll();
+
+	echo '</ul>
 		</body>
-		</html>',
-		implode("\n", $reader->fetchAll())
-	));
+		</html>';
 
 	?>
 

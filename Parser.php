@@ -25,7 +25,7 @@ class Parser
 	 * @param string フィールドの区切り文字
 	 * @param string フィールドの囲み文字
 	 * @param string フィールドに含まれる囲み文字のエスケープ文字
-	 * @return mixed CSV1レコード分の配列
+	 * @return array CSV1レコード分の配列
 	 */
 	public function parse($line, $delimiter = null, $enclosure = null, $escape = null)
 	{

@@ -39,6 +39,16 @@ class Reader
 	private $parser;
 
 	/**
+	 * @var int パース済みレコード件数
+	 */
+	private $parsed;
+
+	/**
+	 * @var int フェッチ済みレコード件数
+	 */
+	private $fetched;
+
+	/**
 	 * constructor
 	 *
 	 * @param array 設定オプション
@@ -61,8 +71,6 @@ class Reader
 			'escape'    => '"',
 			'inputEncoding'  => mb_internal_encoding(),
 			'outputEncoding' => mb_internal_encoding(),
-			'skipHeaderLine' => false,
-			'skipEmptyLine'  => false,
 			'parseByPcre'    => true,
 		));
 		if (!empty($configurations)) {
@@ -71,6 +79,8 @@ class Reader
 		$this->filters = new Configuration();
 		$this->file = null;
 		$this->parser = new Parser();
+		$this->parsed = 0;
+		$this->fetched = 0;
 		return $this;
 	}
 
@@ -83,8 +93,6 @@ class Reader
 	 * escape          : フィールドに含まれる囲み文字のエスケープ文字 ※1文字のみ対応
 	 * inputEncoding   : 入力文字コード（CSVファイルの文字コード）
 	 * outputEncoding  : 出力文字コード（データの文字コード）
-	 * skipHeaderLine  : ヘッダ行を無視するかどうか
-	 * skipEmptyLine   : 空行（改行コードだけの行）を無視するかどうか
 	 * parseByPcre     : PCRE関数による独自のCSV解析処理を行うかどうか
 	 *
 	 * str_getcsv() には delimiter と escape に異なる文字を指定しても delimiter が
@@ -118,8 +126,6 @@ class Reader
 							sprintf('The config parameter "%s" accepts one character.', $name));
 					}
 					break;
-				case 'skipHeaderLine':
-				case 'skipEmptyLine':
 				case 'parseByPcre':
 					if (is_int($value) || ctype_digit($value)) {
 						$value = (bool)$value;
@@ -187,21 +193,21 @@ class Reader
 	 * @param mixed array | ArrayAccess フィールド配列
 	 * @return array 1レコード分の配列
 	 */
-	public function applyFilters($fields)
+	public function applyFilters($columns)
 	{
 
-		if (!is_array($fields) && !($fields instanceof \ArrayAccess)) {
+		if (!is_array($columns) && !($columns instanceof \ArrayAccess)) {
 			throw new \InvalidArgumentException(
-				sprintf('The fields accepts an array or Traversable. invalid type:"%s"', gettype($fields)));
+				sprintf('The columns accepts an array or Traversable. invalid type:"%s"', gettype($columns)));
 		}
 
 		if (count($this->filters) >= 1) {
 			foreach ($this->filters->getIterator() as $filter) {
-				$fields = $filter($fields);
+				$columns = $filter($columns);
 			}
 		}
 
-		return $fields;
+		return $columns;
 	}
 
 	/**
@@ -213,7 +219,7 @@ class Reader
 	 * (3)区切り文字・囲み文字・エスケープ文字を解析して文字列から配列に変換
 	 *
 	 * @param string CSV1レコード分の文字列
-	 * @return mixed CSV1レコード分の配列
+	 * @return array CSV1レコード分の配列
 	 */
 	public function convert($line)
 	{
@@ -266,22 +272,27 @@ class Reader
 	public function getFile()
 	{
 		if (!isset($this->file)) {
-			throw new \RuntimeException('File is not open.');
+			throw new \RuntimeException('File is not set.');
 		}
 		return $this->file;
 	}
 
 	/**
-	 * 1件分のCSVデータを現在のインデックスから読み込んで処理します。
+	 * 1件分のCSVデータを現在のインデックスから読み込み、パース結果を取得します。
 	 * 囲み文字があれば、次の囲み文字までまとめて読み込みます。
 	 *
-	 * @return mixed array | Traversable レコード
+	 * 以下の条件の場合に FALSE を返します。
+	 *   処理対象の文字列がない場合
+	 *
+	 * フィルタが登録されていればフィルタで処理し、結果を返します。
+	 *
+	 * @return mixed FALSE またはフィルタ処理結果
 	 */
-	public function fetch()
+	public function parse()
 	{
 
 		if (!isset($this->file)) {
-			throw new \RuntimeException('File is not open.');
+			throw new \RuntimeException('File is not set.');
 		}
 
 		$enclosure = $this->config->get('enclosure');
@@ -295,39 +306,80 @@ class Reader
 			}
 		}
 
-		$fields = $this->applyFilters($this->convert($line));
+		if ($this->file->eof() && strlen($line) === 0) {
+			return false;
+		}
 
-		return $fields;
+		$columns = $this->convert($line);
+
+		$this->parsed++;
+
+		return $columns;
 	}
 
 	/**
-	 * CSVデータをファイルから読み込んで処理します。
+	 * CSVデータをファイルから読み込み、1件ずつ処理した結果を配列で返します。
+	 * パース結果が FALSE の場合は結果を配列に取得しません。
 	 *
-	 * @return boolean
+	 * @return array 処理結果の配列
 	 */
 	public function fetchAll()
 	{
 
 		if (!isset($this->file)) {
-			throw new \RuntimeException('File is not open.');
+			throw new \RuntimeException('File is not set.');
+		}
+
+		$this->rewind();
+
+		$fetchedResults = array();
+
+		while (!$this->file->eof()) {
+			$columns = $this->parse();
+			if ($columns !== false) {
+				$columns = $this->applyFilters($columns);
+				if ($columns !== false) {
+					$fetchedResults[] = $columns;
+					$this->fetched++;
+				}
+			}
+		}
+
+		return $fetchedResults;
+	}
+
+	/**
+	 * パース済みレコードの件数を返します。
+	 *
+	 * @return int パース済みレコード件数
+	 */
+	public function getParsed()
+	{
+		return $this->parsed;
+	}
+
+	/**
+	 * フェッチ済みレコードの件数を返します。
+	 *
+	 * @return int フェッチ済みレコード件数
+	 */
+	public function getFetched()
+	{
+		return $this->fetched;
+	}
+
+	/**
+	 * ファイルの読み込み状態を巻き戻します。
+	 */
+	public function rewind()
+	{
+		if (!isset($this->file)) {
+			throw new \RuntimeException('File is not set.');
 		}
 
 		$this->file->rewind();
-
-		$records = array();
-		$index = 0;
-
-		while (!$this->file->eof()) {
-			$fields = $this->fetch();
-			if ($index > 0 || !$this->config('skipHeaderLine')) {
-				if ((isset($fields[0]) && strlen($fields[0]) >= 1) || !$this->config('skipEmptyLine')) {
-					$records[] = $fields;
-				}
-			}
-			$index++;
-		}
-
-		return $records;
+		$this->parsed = 0;
+		$this->fetched = 0;
 	}
 
 	/**
