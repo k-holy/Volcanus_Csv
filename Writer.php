@@ -43,6 +43,21 @@ class Writer
 	 */
 	private $builder;
 
+	/*
+	 * エンコーディング方法: Shift-JISプレーン
+	 */
+	const ENCODING_SJIS_PLAIN = 1;
+
+	/*
+	 * エンコーディング方法: Percent-Encoding
+	 */
+	const ENCODING_PERCENT_ENCODING = 3;
+
+	/*
+	 * エンコーディング方法: RFC 2047()
+	 */
+	const ENCODING_RFC2047= 4;
+
 	/**
 	 * constructor
 	 *
@@ -70,6 +85,7 @@ class Writer
 			'outputEncoding'   => mb_internal_encoding(),
 			'writeHeaderLine'  => false,
 			'responseFilename' => null,
+			'responseFilenameEncoding' => null,
 		));
 		if (!empty($configurations)) {
 			$this->config->parameters($configurations);
@@ -94,6 +110,10 @@ class Writer
 	 * outputEncoding  : 出力文字コード（CSVファイルの文字コード）
 	 * writeHeaderLine : ヘッダ行を出力するかどうか
 	 * responseFilename: レスポンス出力時のファイル名
+	 * responseFilenameEncoding: レスポンス出力時のファイル名のエンコード方法
+	 *                           ENCODING_SJIS_PLAIN |
+	 *                           ENCODING_PERCENT_ENCODING |
+	 *                           ENCODING_RFC2047
 	 *
 	 * @param string 設定名
 	 * @return mixed 設定値 または $this
@@ -136,6 +156,16 @@ class Writer
 					if (!is_string($value)) {
 						throw new \InvalidArgumentException(
 							sprintf('The config parameter "%s" only accepts string.', $name));
+					}
+					break;
+				case 'responseFilenameEncoding':
+					if (!in_array($value, array(
+						self::ENCODING_SJIS_PLAIN,
+						self::ENCODING_PERCENT_ENCODING,
+						self::ENCODING_RFC2047,
+					))) {
+						throw new \InvalidArgumentException(
+							sprintf('The config parameter "%s" invalid value "%s".', $name, $value));
 					}
 					break;
 				}
@@ -425,10 +455,24 @@ class Writer
 		}
 
 		$filename = $this->config->get('responseFilename');
+		$filenameEncoding = $this->config->get('responseFilenameEncoding');
 		if (isset($filename)) {
-			$filename = mb_convert_encoding($filename, 'SJIS-win');
-			$headers['Content-Disposition'] = sprintf('%s; filename="%s"', $headers['Content-Disposition'], $filename);
-			$headers['Content-Type'] = sprintf('%s; name="%s"', $headers['Content-Type'], $filename);
+			if (!isset($filenameEncoding)) {
+				$headers['Content-Disposition'] .= sprintf('; filename="%s"', $filename);
+			} else {
+				switch ($filenameEncoding) {
+				case self::ENCODING_SJIS_PLAIN:
+					$headers['Content-Disposition'] .= sprintf('; filename="%s"', mb_convert_encoding($filename, 'SJIS-win'));
+					break;
+				case self::ENCODING_PERCENT_ENCODING:
+					$headers['Content-Disposition'] .= sprintf('; filename=%s', rawurlencode($filename));
+					break;
+				case self::ENCODING_RFC2047:
+					$headers['Content-Disposition'] .= sprintf('; filename="=?UTF-8?B?%s?="', base64_encode($filename));
+					break;
+				}
+				$headers['Content-Disposition'] .= sprintf("; filename*=utf-8''%s", rawurlencode($filename));
+			}
 		}
 
 		$headers['Content-Length'] = $this->contentLength();

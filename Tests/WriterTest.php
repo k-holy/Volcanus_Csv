@@ -481,12 +481,12 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 		));
 		$writer->responseFilename = 'test.csv';
 		$headers = $writer->buildResponseHeaders();
-		$this->assertEquals($headers['Content-Type'], 'application/octet-stream; name="test.csv"');
+		$this->assertEquals($headers['Content-Type'], 'application/octet-stream');
 		$this->assertEquals($headers['Content-Disposition'], 'attachment; filename="test.csv"');
 		$this->assertEquals($headers['Content-Length'], $writer->contentLength());
 	}
 
-	public function testBuildResponseHeadersWithMultibyteResponseFilename()
+	public function testBuildResponseHeadersWithMultibyteResponseFilenameAndResponseFilenameEncodingSjisPlainAndRfc2231()
 	{
 		$writer = new Writer();
 		$writer->file = new \SplFileObject('php://memory', '+r');
@@ -494,11 +494,52 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 			array('1', '田中'),
 		));
 		$writer->responseFilename = 'ソ十貼能表暴予.csv';
+		$writer->responseFilenameEncoding = Writer::ENCODING_SJIS_PLAIN;
 		$headers = $writer->buildResponseHeaders();
-		$this->assertEquals($headers['Content-Type'],
-			sprintf('application/octet-stream; name="%s"', mb_convert_encoding('ソ十貼能表暴予.csv', 'SJIS-win')));
+		$this->assertEquals($headers['Content-Type'], 'application/octet-stream');
 		$this->assertEquals($headers['Content-Disposition'],
-			sprintf('attachment; filename="%s"', mb_convert_encoding('ソ十貼能表暴予.csv', 'SJIS-win')));
+			sprintf('attachment; filename="%s"; filename*=utf-8\'\'%s',
+				mb_convert_encoding('ソ十貼能表暴予.csv', 'SJIS-win'),
+				rawurlencode('ソ十貼能表暴予.csv')
+			));
+		$this->assertEquals($headers['Content-Length'], $writer->contentLength());
+	}
+
+	public function testBuildResponseHeadersWithMultibyteResponseFilenameAndResponseFilenameEncodingPercentEncodingAndRfc2231()
+	{
+		$writer = new Writer();
+		$writer->file = new \SplFileObject('php://memory', '+r');
+		$writer->write(array(
+			array('1', '田中'),
+		));
+		$writer->responseFilename = 'ソ十貼能表暴予.csv';
+		$writer->responseFilenameEncoding = Writer::ENCODING_PERCENT_ENCODING;
+		$headers = $writer->buildResponseHeaders();
+		$this->assertEquals($headers['Content-Type'], 'application/octet-stream');
+		$this->assertEquals($headers['Content-Disposition'],
+			sprintf('attachment; filename=%s; filename*=utf-8\'\'%s',
+				rawurlencode('ソ十貼能表暴予.csv'),
+				rawurlencode('ソ十貼能表暴予.csv')
+			));
+		$this->assertEquals($headers['Content-Length'], $writer->contentLength());
+	}
+
+	public function testBuildResponseHeadersWithMultibyteResponseFilenameAndResponseFilenameEncodingRfc2047AndRfc2231()
+	{
+		$writer = new Writer();
+		$writer->file = new \SplFileObject('php://memory', '+r');
+		$writer->write(array(
+			array('1', '田中'),
+		));
+		$writer->responseFilename = 'ソ十貼能表暴予.csv';
+		$writer->responseFilenameEncoding = Writer::ENCODING_RFC2047;
+		$headers = $writer->buildResponseHeaders();
+		$this->assertEquals($headers['Content-Type'], 'application/octet-stream');
+		$this->assertEquals($headers['Content-Disposition'],
+			sprintf('attachment; filename="=?UTF-8?B?%s?="; filename*=utf-8\'\'%s',
+				base64_encode('ソ十貼能表暴予.csv'),
+				rawurlencode('ソ十貼能表暴予.csv')
+			));
 		$this->assertEquals($headers['Content-Length'], $writer->contentLength());
 	}
 
