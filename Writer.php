@@ -2,7 +2,7 @@
 /**
  * Volcanus libraries for PHP
  *
- * @copyright 2012 k-holy <k.holy74@gmail.com>
+ * @copyright 2011-2013 k-holy <k.holy74@gmail.com>
  * @license The MIT License (MIT)
  */
 namespace Volcanus\Csv;
@@ -43,20 +43,20 @@ class Writer
 	 */
 	private $builder;
 
-	/*
-	 * エンコーディング方法: Shift-JISプレーン
+	/**
+	 * @const int エンコーディング方法: プレーンShift-JIS
 	 */
-	const ENCODING_SJIS_PLAIN = 1;
+	const PLAIN_SJIS = 1;
 
-	/*
-	 * エンコーディング方法: Percent-Encoding
+	/**
+	 * @const int エンコーディング方法: Percent-Encoding
 	 */
-	const ENCODING_PERCENT_ENCODING = 3;
+	const PERCENT_ENCODING = 2;
 
-	/*
-	 * エンコーディング方法: RFC 2047()
+	/**
+	 * @const int エンコーディング方法: RFC 2047()
 	 */
-	const ENCODING_RFC2047= 4;
+	const RFC2047= 3;
 
 	/**
 	 * constructor
@@ -111,9 +111,7 @@ class Writer
 	 * writeHeaderLine : ヘッダ行を出力するかどうか
 	 * responseFilename: レスポンス出力時のファイル名
 	 * responseFilenameEncoding: レスポンス出力時のファイル名のエンコード方法
-	 *                           ENCODING_SJIS_PLAIN |
-	 *                           ENCODING_PERCENT_ENCODING |
-	 *                           ENCODING_RFC2047
+	 *                           PLAIN_SJIS | PERCENT_ENCODING | RFC2047
 	 *
 	 * @param string 設定名
 	 * @return mixed 設定値 または $this
@@ -160,9 +158,9 @@ class Writer
 					break;
 				case 'responseFilenameEncoding':
 					if (!in_array($value, array(
-						self::ENCODING_SJIS_PLAIN,
-						self::ENCODING_PERCENT_ENCODING,
-						self::ENCODING_RFC2047,
+						self::PLAIN_SJIS,
+						self::PERCENT_ENCODING,
+						self::RFC2047,
 					))) {
 						throw new \InvalidArgumentException(
 							sprintf('The config parameter "%s" invalid value "%s".', $name, $value));
@@ -180,7 +178,7 @@ class Writer
 	 * 1レコード分のフィールド配列をCSV形式の文字列に変換し、
 	 * 文字コードの変換および改行を付与して返します。
 	 *
-	 * @param array  1レコード分のフィールド配列
+	 * @param mixed array|Traversable 1レコード分のフィールド配列
 	 * @return string CSVの1レコード分の文字列
 	 */
 	public function build($fields) 
@@ -275,23 +273,29 @@ class Writer
 	/**
 	 * フィールドの設定を元に1レコード分の配列をフィールド配列に変換して返します。
 	 *
-	 * @param mixed array | ArrayAccess 1レコード分の配列
+	 * @param mixed array|object 1レコード分の配列
 	 * @return array 1レコード分の配列
 	 */
 	public function buildFields($record)
 	{
 
-		if (!is_array($record) && !($record instanceof \ArrayAccess)) {
+		if (!is_array($record) && !is_object($record)) {
 			throw new \InvalidArgumentException(
-				sprintf('The record accepts an array or ArrayAccess. invalid type:"%s"', gettype($record)));
+				sprintf('The record accepts an array or object. invalid type:"%s"', gettype($record)));
 		}
 
 		$fields = array();
 		foreach ($this->fields as $filter) {
 			$field = null;
 			if (is_string($filter)) {
-				if (isset($record[$filter])) {
-					$field = $record[$filter];
+				if (is_array($record) || $record instanceof \ArrayAccess) {
+					if (isset($record[$filter])) {
+						$field = $record[$filter];
+					}
+				} else {
+					if (isset($record->{$filter})) {
+						$field = $record->{$filter};
+					}
 				}
 			} else {
 				$field = $filter($record);
@@ -335,7 +339,7 @@ class Writer
 	/**
 	 * 1レコード分の配列をCSV文字列に変換して返します。
 	 *
-	 * @param mixed array | ArrayAccess 1レコード分の配列
+	 * @param mixed array|object 1レコード分の配列
 	 * @return string 1レコード分のCSV文字列
 	 */
 	public function buildContentLine($record)
@@ -371,7 +375,7 @@ class Writer
 	/**
 	 * データをCSVに変換してファイルに出力します。
 	 *
-	 * @param mixed array | Traversable レコード
+	 * @param mixed array|Traversable レコード
 	 * @return $this
 	 */
 	public function write($records)
@@ -386,7 +390,7 @@ class Writer
 				sprintf('Records accepts an array or Traversable. invalid type:"%s"', gettype($records)));
 		}
 
-		if ($this->config('writeHeaderLine')) {
+		if ($this->config->get('writeHeaderLine')) {
 			$this->file->fwrite($this->buildHeaderLine());
 		}
 
@@ -461,13 +465,13 @@ class Writer
 				$headers['Content-Disposition'] .= sprintf('; filename="%s"', $filename);
 			} else {
 				switch ($filenameEncoding) {
-				case self::ENCODING_SJIS_PLAIN:
+				case self::PLAIN_SJIS:
 					$headers['Content-Disposition'] .= sprintf('; filename="%s"', mb_convert_encoding($filename, 'SJIS-win'));
 					break;
-				case self::ENCODING_PERCENT_ENCODING:
+				case self::PERCENT_ENCODING:
 					$headers['Content-Disposition'] .= sprintf('; filename=%s', rawurlencode($filename));
 					break;
-				case self::ENCODING_RFC2047:
+				case self::RFC2047:
 					$headers['Content-Disposition'] .= sprintf('; filename="=?UTF-8?B?%s?="', base64_encode($filename));
 					break;
 				}

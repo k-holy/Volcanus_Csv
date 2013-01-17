@@ -2,7 +2,7 @@
 /**
  * Volcanus libraries for PHP
  *
- * @copyright 2012 k-holy <k.holy74@gmail.com>
+ * @copyright 2011-2013 k-holy <k.holy74@gmail.com>
  * @license The MIT License (MIT)
  */
 namespace Volcanus\Csv\Tests;
@@ -332,6 +332,31 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
+	public function testFieldAndBuildFieldsByObject()
+	{
+		$writer = new Writer();
+		$writer->field(0, 'surname');
+		$writer->field(1, 'firstname');
+		$writer->field(2, 'age');
+
+		$user = new \stdClass();
+		$user->id = 1;
+		$user->surname = '田中';
+		$user->firstname = '一郎';
+		$user->age = 22;
+		$this->assertEquals(array('田中', '一郎', '22'),
+			$writer->buildFields($user)
+		);
+
+		$user = new \stdClass();
+		$user->id = 2;
+		$user->surname = '山田';
+		$user->firstname = '花子';
+		$this->assertEquals(array('山田', '花子', null),
+			$writer->buildFields($user)
+		);
+	}
+
 	public function testFieldAndBuildContentLine()
 	{
 		$writer = new Writer();
@@ -406,6 +431,38 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 				'surname'   => '山田',
 				'firstname' => '花子',
 			))
+		);
+	}
+
+	public function testFieldsAndBuildFieldsByObjectWithCallback()
+	{
+		$writer = new Writer();
+		$writer->fields(array(
+			array(function($user) {
+					return $user->surname . $user->firstname;
+				}, 'ユーザー名'
+			),
+			array(function($user) {
+					return (isset($user->age)) ? $user->age : '不詳';
+				}, '年齢'
+			)
+		));
+
+		$user = new \stdClass();
+		$user->id = 1;
+		$user->surname = '田中';
+		$user->firstname = '一郎';
+		$user->age = 22;
+		$this->assertEquals(array('田中一郎', '22'),
+			$writer->buildFields($user)
+		);
+
+		$user = new \stdClass();
+		$user->id = 2;
+		$user->surname = '山田';
+		$user->firstname = '花子';
+		$this->assertEquals(array('山田花子', '不詳'),
+			$writer->buildFields($user)
 		);
 	}
 
@@ -494,7 +551,7 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 			array('1', '田中'),
 		));
 		$writer->responseFilename = 'ソ十貼能表暴予.csv';
-		$writer->responseFilenameEncoding = Writer::ENCODING_SJIS_PLAIN;
+		$writer->responseFilenameEncoding = Writer::PLAIN_SJIS;
 		$headers = $writer->buildResponseHeaders();
 		$this->assertEquals($headers['Content-Type'], 'application/octet-stream');
 		$this->assertEquals($headers['Content-Disposition'],
@@ -513,7 +570,7 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 			array('1', '田中'),
 		));
 		$writer->responseFilename = 'ソ十貼能表暴予.csv';
-		$writer->responseFilenameEncoding = Writer::ENCODING_PERCENT_ENCODING;
+		$writer->responseFilenameEncoding = Writer::PERCENT_ENCODING;
 		$headers = $writer->buildResponseHeaders();
 		$this->assertEquals($headers['Content-Type'], 'application/octet-stream');
 		$this->assertEquals($headers['Content-Disposition'],
@@ -532,7 +589,7 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 			array('1', '田中'),
 		));
 		$writer->responseFilename = 'ソ十貼能表暴予.csv';
-		$writer->responseFilenameEncoding = Writer::ENCODING_RFC2047;
+		$writer->responseFilenameEncoding = Writer::RFC2047;
 		$headers = $writer->buildResponseHeaders();
 		$this->assertEquals($headers['Content-Type'], 'application/octet-stream');
 		$this->assertEquals($headers['Content-Disposition'],

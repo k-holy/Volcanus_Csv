@@ -2,7 +2,7 @@
 /**
  * Volcanus libraries for PHP
  *
- * @copyright 2012 k-holy <k.holy74@gmail.com>
+ * @copyright 2011-2013 k-holy <k.holy74@gmail.com>
  * @license The MIT License (MIT)
  */
 namespace Volcanus\Csv;
@@ -18,7 +18,7 @@ class Builder
 	/**
 	 * 1レコード分のフィールド配列をCSV形式の文字列に変換して返します。
 	 *
-	 * @param array フィールドの配列
+	 * @param mixed array|Traversable フィールドの配列
 	 * @param string フィールドの区切り文字
 	 * @param string フィールドの囲み文字
 	 * @param string フィールドに含まれる囲み文字のエスケープ文字
