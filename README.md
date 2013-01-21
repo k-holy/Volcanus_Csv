@@ -11,6 +11,12 @@ CSV形式ファイルの入出力処理を簡潔に行うためのPHPクラス�
 * PHP 5.3以降
 * mbstring拡張
 
+##依存ライブラリ
+
+* [Volcanus_Configuration](https://github.com/k-holy/Volcanus_Configuration)
+
+テストケースの実行には composer による上記ライブラリのインストールが必要です。
+
 
 ##Volcanus\Csv\Writer
 

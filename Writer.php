@@ -7,8 +7,8 @@
  */
 namespace Volcanus\Csv;
 
-use Volcanus\Csv\Configuration;
 use Volcanus\Csv\Builder;
+use Volcanus\Configuration\Configuration;
 
 /**
  * Writer
@@ -88,7 +88,7 @@ class Writer
 			'responseFilenameEncoding' => null,
 		));
 		if (!empty($configurations)) {
-			$this->config->parameters($configurations);
+			$this->config->attributes($configurations);
 		}
 		$this->fields = new Configuration();
 		$this->labels = new Configuration();

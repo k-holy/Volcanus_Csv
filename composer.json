@@ -4,7 +4,7 @@
     "description": "Utilities for reading and writing CSV ",
     "keywords": ["csv"],
     "homepage": "https://github.com/k-holy/Volcanus_Csv",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "license": "MIT",
     "authors": [
         {
@@ -14,7 +14,8 @@
     ],
     "require": {
         "php": ">=5.3",
-        "ext-mbstring" : "*"
+        "ext-mbstring" : "*",
+        "volcanus/configuration": "dev-master"
     },
     "autoload": {
         "psr-0": { "Volcanus\\Csv": "" }

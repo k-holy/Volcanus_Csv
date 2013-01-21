@@ -7,8 +7,8 @@
  */
 namespace Volcanus\Csv;
 
-use Volcanus\Csv\Configuration;
 use Volcanus\Csv\Parser;
+use Volcanus\Configuration\Configuration;
 
 /**
  * Reader
@@ -74,7 +74,7 @@ class Reader
 			'parseByPcre'    => true,
 		));
 		if (!empty($configurations)) {
-			$this->config->parameters($configurations);
+			$this->config->attributes($configurations);
 		}
 		$this->filters = new Configuration();
 		$this->file = null;
