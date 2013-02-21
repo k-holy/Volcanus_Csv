@@ -1,9 +1,9 @@
 general:
   framework: phpunit
   test_targets:
+    recursive:
     resources:
       - Tests
-    recursive:
   autotest:
     enabled: false
     watch_dirs:

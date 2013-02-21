@@ -4,7 +4,7 @@
     "description": "Utilities for reading and writing CSV ",
     "keywords": ["csv"],
     "homepage": "https://github.com/k-holy/Volcanus_Csv",
-    "version": "1.0.3",
+    "version": "1.0.4-dev",
     "license": "MIT",
     "authors": [
         {
