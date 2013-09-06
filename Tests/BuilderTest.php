@@ -104,4 +104,16 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
 			$builder->buildField('"田"中""', null, null, '\\'));
 	}
 
+	public function testBuildFieldNoEscapeWhenEscapeParameterIsEmpty()
+	{
+		$builder = new Builder();
+
+		$this->assertEquals('田中',
+			$builder->buildField('田中', "\t", '', ''));
+
+		$this->assertEquals("田中\t",
+			$builder->buildField("田中\t", "\t", '', ''));
+	}
+
+
 }

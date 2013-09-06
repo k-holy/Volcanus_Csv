@@ -102,9 +102,9 @@ class Builder
 		$csv_field = '';
 
 		if (!$enclose && (
-			mb_strpos($field, $delimiter, 0, $encoding) !== false ||
-			mb_strpos($field, $enclosure, 0, $encoding) !== false ||
-			mb_strpos($field, $escape, 0, $encoding) !== false ||
+			(mb_strlen($escape) >= 1 && mb_strpos($field, $escape, 0, $encoding) !== false) ||
+			(mb_strlen($enclosure) >= 1 && mb_strpos($field, $enclosure, 0, $encoding) !== false) ||
+			(mb_strlen($delimiter) >= 1 && mb_strpos($field, $delimiter, 0, $encoding) !== false) ||
 			mb_strpos($field, "\n", 0, $encoding) !== false ||
 			mb_strpos($field, "\r", 0, $encoding) !== false
 		)) {
