@@ -5,6 +5,7 @@
  * @copyright 2011-2013 k-holy <k.holy74@gmail.com>
  * @license The MIT License (MIT)
  */
+
 namespace Volcanus\Csv\Tests;
 
 use Volcanus\Csv\Writer;
@@ -242,7 +243,7 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 		$writer->writeHeaderLine = 'true';
 	}
 
-	public function testSetContentFilename()
+	public function testSetResponseFilename()
 	{
 		$writer = new Writer();
 		$writer->responseFilename = 'test.csv';
@@ -252,7 +253,7 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @expectedException \InvalidArgumentException
 	 */
-	public function testSetContentFilenameRaiseInvalidArgumentException()
+	public function testSetResponseFilenameRaiseInvalidArgumentException()
 	{
 		$writer = new Writer();
 		$writer->responseFilename = array();

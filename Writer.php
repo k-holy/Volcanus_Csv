@@ -5,10 +5,8 @@
  * @copyright 2011-2013 k-holy <k.holy74@gmail.com>
  * @license The MIT License (MIT)
  */
-namespace Volcanus\Csv;
 
-use Volcanus\Csv\Builder;
-use Volcanus\Configuration\Configuration;
+namespace Volcanus\Csv;
 
 /**
  * Writer
@@ -88,7 +86,9 @@ class Writer
 			'responseFilenameEncoding' => null,
 		));
 		if (!empty($configurations)) {
-			$this->config->attributes($configurations);
+			foreach ($configurations as $name => $value) {
+				$this->config[$name] = $value;
+			}
 		}
 		$this->fields = new Configuration();
 		$this->labels = new Configuration();
@@ -120,7 +120,7 @@ class Writer
 	{
 		switch (func_num_args()) {
 		case 1:
-			return $this->config->get($name);
+			return $this->config[$name];
 		case 2:
 			$value = func_get_arg(1);
 			if (isset($value)) {
@@ -167,7 +167,7 @@ class Writer
 					}
 					break;
 				}
-				$this->config->set($name, $value);
+				$this->config[$name] = $value;
 			}
 			return $this;
 		}
@@ -184,14 +184,14 @@ class Writer
 	public function build($fields) 
 	{
 
-		$outputEncoding = $this->config->get('outputEncoding');
-		$inputEncoding  = $this->config->get('inputEncoding');
+		$outputEncoding = $this->config->offsetGet('outputEncoding');
+		$inputEncoding  = $this->config->offsetGet('inputEncoding');
 
 		$line = $this->builder->build($fields,
-			$this->config->get('delimiter'),
-			$this->config->get('enclosure'),
-			$this->config->get('escape'),
-			$this->config->get('enclose'),
+			$this->config->offsetGet('delimiter'),
+			$this->config->offsetGet('enclosure'),
+			$this->config->offsetGet('escape'),
+			$this->config->offsetGet('enclose'),
 			$inputEncoding
 		);
 
@@ -203,7 +203,7 @@ class Writer
 			}
 		}
 
-		return $line . $this->config->get('newLine');
+		return $line . $this->config->offsetGet('newLine');
 	}
 
 	/**
@@ -218,7 +218,7 @@ class Writer
 	{
 		switch (func_num_args()) {
 		case 1:
-			return $this->labels->get($index);
+			return $this->labels->offsetGet($index);
 		case 2:
 			$name = func_get_arg(1);
 			if (!is_string($name)) {
@@ -390,7 +390,7 @@ class Writer
 				sprintf('Records accepts an array or Traversable. invalid type:"%s"', gettype($records)));
 		}
 
-		if ($this->config->get('writeHeaderLine')) {
+		if ($this->config->offsetGet('writeHeaderLine')) {
 			$this->file->fwrite($this->buildHeaderLine());
 		}
 
@@ -458,8 +458,8 @@ class Writer
 			$headers['Content-Disposition'] = 'attachment';
 		}
 
-		$filename = $this->config->get('responseFilename');
-		$filenameEncoding = $this->config->get('responseFilenameEncoding');
+		$filename = $this->config->offsetGet('responseFilename');
+		$filenameEncoding = $this->config->offsetGet('responseFilenameEncoding');
 		if (isset($filename)) {
 			if (!isset($filenameEncoding)) {
 				$headers['Content-Disposition'] .= sprintf('; filename="%s"', $filename);

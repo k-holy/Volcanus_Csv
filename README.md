@@ -13,9 +13,7 @@ CSV形式ファイルの入出力処理を簡潔に行うためのPHPクラス�
 
 ##依存ライブラリ
 
-* [Volcanus_Configuration](https://github.com/k-holy/Volcanus_Configuration)
-
-テストケースの実行には composer による上記ライブラリのインストールが必要です。
+ありません。
 
 
 ##Volcanus\Csv\Writer

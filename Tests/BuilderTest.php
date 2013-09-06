@@ -5,6 +5,7 @@
  * @copyright 2011-2013 k-holy <k.holy74@gmail.com>
  * @license The MIT License (MIT)
  */
+
 namespace Volcanus\Csv\Tests;
 
 use Volcanus\Csv\Builder;
@@ -102,5 +103,17 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals('"\"田\"中\"\""',
 			$builder->buildField('"田"中""', null, null, '\\'));
 	}
+
+	public function testBuildFieldNoEscapeWhenEscapeParameterIsEmpty()
+	{
+		$builder = new Builder();
+
+		$this->assertEquals('田中',
+			$builder->buildField('田中', "\t", '', ''));
+
+		$this->assertEquals("田中\t",
+			$builder->buildField("田中\t", "\t", '', ''));
+	}
+
 
 }
