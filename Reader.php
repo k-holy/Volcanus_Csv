@@ -5,10 +5,8 @@
  * @copyright 2011-2013 k-holy <k.holy74@gmail.com>
  * @license The MIT License (MIT)
  */
-namespace Volcanus\Csv;
 
-use Volcanus\Csv\Parser;
-use Volcanus\Configuration\Configuration;
+namespace Volcanus\Csv;
 
 /**
  * Reader
@@ -74,7 +72,9 @@ class Reader
 			'parseByPcre'    => true,
 		));
 		if (!empty($configurations)) {
-			$this->config->attributes($configurations);
+			foreach ($configurations as $name => $value) {
+				$this->config[$name] = $value;
+			}
 		}
 		$this->filters = new Configuration();
 		$this->file = null;
@@ -109,7 +109,7 @@ class Reader
 	{
 		switch (func_num_args()) {
 		case 1:
-			return $this->config->get($name);
+			return $this->config[$name];
 		case 2:
 			$value = func_get_arg(1);
 			if (isset($value)) {
@@ -143,7 +143,7 @@ class Reader
 					}
 					break;
 				}
-				$this->config->set($name, $value);
+				$this->config[$name] = $value;
 			}
 			return $this;
 		}
@@ -162,7 +162,7 @@ class Reader
 	{
 		switch (func_num_args()) {
 		case 1:
-			return $this->filters->get($index);
+			return $this->filters->offsetGet($index);
 		case 2:
 			$filter = func_get_arg(1);
 			if (!is_callable($filter)) {
@@ -223,8 +223,8 @@ class Reader
 	 */
 	public function convert($line)
 	{
-		$outputEncoding = $this->config->get('outputEncoding');
-		$inputEncoding = $this->config->get('inputEncoding');
+		$outputEncoding = $this->config->offsetGet('outputEncoding');
+		$inputEncoding  = $this->config->offsetGet('inputEncoding');
 
 		$line = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]+/S', '', $line);
 
@@ -236,11 +236,11 @@ class Reader
 			}
 		}
 
-		$delimiter = $this->config->get('delimiter');
-		$enclosure = $this->config->get('enclosure');
-		$escape = $this->config->get('escape');
+		$delimiter = $this->config->offsetGet('delimiter');
+		$enclosure = $this->config->offsetGet('enclosure');
+		$escape = $this->config->offsetGet('escape');
 
-		if (!$this->config->get('parseByPcre')) {
+		if (!$this->config->offsetGet('parseByPcre')) {
 			return str_getcsv($line, $delimiter, $enclosure, $escape);
 		}
 
@@ -295,7 +295,7 @@ class Reader
 			throw new \RuntimeException('File is not set.');
 		}
 
-		$enclosure = $this->config->get('enclosure');
+		$enclosure = $this->config->offsetGet('enclosure');
 		$endOfLine = false;
 		$line = '';
 

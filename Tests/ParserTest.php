@@ -5,6 +5,7 @@
  * @copyright 2011-2013 k-holy <k.holy74@gmail.com>
  * @license The MIT License (MIT)
  */
+
 namespace Volcanus\Csv\Tests;
 
 use Volcanus\Csv\Parser;
