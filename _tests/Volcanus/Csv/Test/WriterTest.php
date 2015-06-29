@@ -6,7 +6,7 @@
  * @license The MIT License (MIT)
  */
 
-namespace Volcanus\Csv\Tests;
+namespace Volcanus\Csv\Test;
 
 use Volcanus\Csv\Writer;
 
