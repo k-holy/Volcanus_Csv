@@ -416,21 +416,30 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 			array(function($item) {
 					return (isset($item['age'])) ? $item['age'] : '不詳';
 				}, '年齢'
-			)
+			),
+			array('prefecture.name', '出身地'),
 		));
-		$this->assertEquals(array('田中一郎', '22'),
+		$this->assertEquals(array('田中一郎', '22', '兵庫県'),
 			$writer->buildFields(array(
 				'id'        => '1',
 				'surname'   => '田中',
 				'firstname' => '一郎',
 				'age'       => '22',
+				'prefecture' => array(
+					'code' => '28',
+					'name' => '兵庫県',
+				),
 			))
 		);
-		$this->assertEquals(array('山田花子', '不詳'),
+		$this->assertEquals(array('山田花子', '不詳', '大阪府'),
 			$writer->buildFields(array(
 				'id'        => '2',
 				'surname'   => '山田',
 				'firstname' => '花子',
+				'prefecture' => array(
+					'code' => '27',
+					'name' => '大阪府',
+				),
 			))
 		);
 	}
@@ -446,7 +455,8 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 			array(function($user) {
 					return (isset($user->age)) ? $user->age : '不詳';
 				}, '年齢'
-			)
+			),
+			array('prefecture.name', '出身地'),
 		));
 
 		$user = new \stdClass();
@@ -454,7 +464,10 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 		$user->surname = '田中';
 		$user->firstname = '一郎';
 		$user->age = 22;
-		$this->assertEquals(array('田中一郎', '22'),
+		$user->prefecture = new \stdClass();
+		$user->prefecture->name = '兵庫県';
+		$user->prefecture->code = '28';
+		$this->assertEquals(array('田中一郎', '22', '兵庫県'),
 			$writer->buildFields($user)
 		);
 
@@ -462,7 +475,10 @@ class WriterTest extends \PHPUnit_Framework_TestCase
 		$user->id = 2;
 		$user->surname = '山田';
 		$user->firstname = '花子';
-		$this->assertEquals(array('山田花子', '不詳'),
+		$user->prefecture = new \stdClass();
+		$user->prefecture->name = '大阪府';
+		$user->prefecture->code = '27';
+		$this->assertEquals(array('山田花子', '不詳', '大阪府'),
 			$writer->buildFields($user)
 		);
 	}
