@@ -2,7 +2,7 @@
 <phpunit
     backupGlobals="false"
     backupStaticAttributes="false"
-    bootstrap="tests/bootstrap.php"
+    bootstrap="_tests/bootstrap.php"
     colors="true"
     convertErrorsToExceptions="true"
     convertNoticesToExceptions="true"
@@ -18,14 +18,14 @@
 >
     <testsuites>
         <testsuite name="Volcanus_Csv">
-            <directory suffix="Test.php">./tests/Volcanus/Csv/Test</directory>
+            <directory suffix="Test.php">./_tests/Volcanus/Csv/Test</directory>
         </testsuite>
     </testsuites>
     <filter>
         <whitelist>
             <directory>./src</directory>
             <exclude>
-                <directory>./tests</directory>
+                <directory>./_tests</directory>
                 <directory>./vendor</directory>
             </exclude>
         </whitelist>
