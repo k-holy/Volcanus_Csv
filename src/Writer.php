@@ -286,23 +286,42 @@ class Writer
 
 		$fields = array();
 		foreach ($this->fields as $filter) {
-			$field = null;
-			if (is_string($filter)) {
-				if (is_array($record) || $record instanceof \ArrayAccess) {
-					if (isset($record[$filter])) {
-						$field = $record[$filter];
-					}
-				} else {
-					if (isset($record->{$filter})) {
-						$field = $record->{$filter};
-					}
-				}
-			} else {
-				$field = $filter($record);
-			}
-			$fields[] = $field;
+			$fields[] = (is_string($filter))
+				? $this->getField($record, $filter)
+				: $filter($record);
 		}
 		return $fields;
+	}
+
+	private function getField($record, $filter)
+	{
+		$arrayAccess = (is_array($record) || $record instanceof \ArrayAccess);
+		// プロパティを4段階まで辿る ※例: entry.prefecture.branch.barnchName
+		$props = explode('.', $filter);
+		if (isset($props[1])) {
+			if (isset($props[2])) {
+				if (isset($props[3])) {
+					if ($arrayAccess && isset($record[$props[0]][$props[1]][$props[2]][$props[3]])) {
+						return $record[$props[0]][$props[1]][$props[2]][$props[3]];
+					} elseif (isset($record->{$props[0]}->{$props[1]}->{$props[2]}->{$props[3]})) {
+						return $record->{$props[0]}->{$props[1]}->{$props[2]}->{$props[3]};
+					}
+				} elseif ($arrayAccess && isset($record[$props[0]][$props[1]][$props[2]])) {
+					return $record[$props[0]][$props[1]][$props[2]];
+				} elseif (isset($record->{$props[0]}->{$props[1]}->{$props[2]})) {
+					return $record->{$props[0]}->{$props[1]}->{$props[2]};
+				}
+			} elseif ($arrayAccess && isset($record[$props[0]][$props[1]])) {
+					return $record[$props[0]][$props[1]];
+			} elseif (isset($record->{$props[0]}->{$props[1]})) {
+				return $record->{$props[0]}->{$props[1]};
+			}
+		} elseif ($arrayAccess && isset($record[$props[0]])) {
+			return $record[$props[0]];
+		} elseif (isset($record->{$props[0]})) {
+			return $record->{$props[0]};
+		}
+		return null;
 	}
 
 	/**
