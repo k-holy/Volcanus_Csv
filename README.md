@@ -1,5 +1,9 @@
 #Volcanus_Csv
 
+[![Latest Stable Version](https://poser.pugx.org/volcanus/csv/v/stable.png)](https://packagist.org/packages/volcanus/csv)
+[![Build Status](https://travis-ci.org/k-holy/Volcanus_Csv.png?branch=master)](https://travis-ci.org/k-holy/Volcanus_Csv)
+[![Coverage Status](https://coveralls.io/repos/k-holy/Volcanus_Csv/badge.svg)](https://coveralls.io/r/k-holy/Volcanus_Csv)
+
 CSV形式ファイルの入出力処理を簡潔に行うためのPHPクラスライブラリです。
 出力時に利用できる Volcanus\Csv\Writer および、入力時に利用できる Volcanus\Csv\Reader によって構成されています。
 
