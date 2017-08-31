@@ -19,12 +19,12 @@ class Builder
     /**
      * 1レコード分のフィールド配列をCSV形式の文字列に変換して返します。
      *
-     * @param mixed array|Traversable フィールドの配列
-     * @param string フィールドの区切り文字
-     * @param string フィールドの囲み文字
-     * @param string フィールドに含まれる囲み文字のエスケープ文字
-     * @param bool   出力時に全てのフィールドに囲み文字を付与するかどうか
-     * @param string 文字コード
+     * @param array|\Traversable $fields フィールドの配列
+     * @param string $delimiter フィールドの区切り文字
+     * @param string $enclosure フィールドの囲み文字
+     * @param string $escape フィールドに含まれる囲み文字のエスケープ文字
+     * @param bool $enclose 出力時に全てのフィールドに囲み文字を付与するかどうか
+     * @param string $encoding 文字コード
      * @return string CSVの1レコード分の文字列
      */
     public function build($fields, $delimiter = null, $enclosure = null, $escape = null, $enclose = null, $encoding = null)
@@ -69,12 +69,12 @@ class Builder
     /**
      * フィールドの文字列をCSV形式の文字列に変換して返します。
      *
-     * @param string フィールドの文字列
-     * @param string フィールドの区切り文字
-     * @param string フィールドの囲み文字
-     * @param string フィールドに含まれる囲み文字のエスケープ文字
-     * @param bool   出力時に全てのフィールドに囲み文字を付与するかどうか
-     * @param string 文字コード
+     * @param string $field フィールドの文字列
+     * @param string $delimiter フィールドの区切り文字
+     * @param string $enclosure フィールドの囲み文字
+     * @param string $escape フィールドに含まれる囲み文字のエスケープ文字
+     * @param bool $enclose 出力時に全てのフィールドに囲み文字を付与するかどうか
+     * @param string $encoding 文字コード
      * @return string CSVの1フィールド分の文字列
      */
     public function buildField($field, $delimiter = null, $enclosure = null, $escape = null, $enclose = null, $encoding = null)

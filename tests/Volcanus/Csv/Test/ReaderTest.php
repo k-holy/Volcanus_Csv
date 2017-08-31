@@ -20,7 +20,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testDefaultConfigParameter()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $this->assertEquals(',', $reader->delimiter);
         $this->assertEquals('"', $reader->enclosure);
         $this->assertEquals('"', $reader->escape);
@@ -31,7 +31,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConstructWithConfigParameters()
     {
-        $reader = new Reader([
+        $reader = new \Volcanus\Csv\Reader([
             'delimiter' => "\t",
             'enclosure' => "'",
             'escape' => '\\',
@@ -50,14 +50,14 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testSetConfig()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->config('delimiter', "\t");
         $this->assertEquals("\t", $reader->delimiter);
     }
 
     public function testGetConfig()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->delimiter = "\t";
         $this->assertEquals("\t", $reader->config('delimiter'));
     }
@@ -67,7 +67,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
      */
     public function testSetConfigRaiseInvalidArgumentException()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->config('NOT-DEFINED-CONFIG', true);
     }
 
@@ -76,13 +76,13 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
      */
     public function testGetConfigRaiseInvalidArgumentException()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->config('NOT-DEFINED-CONFIG');
     }
 
     public function testSetDelimiter()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->delimiter = "\t";
         $this->assertEquals("\t", $reader->delimiter);
     }
@@ -92,7 +92,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
      */
     public function testSetDelimiterRaiseInvalidArgumentException()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->delimiter = [];
     }
 
@@ -101,13 +101,13 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
      */
     public function testSetDelimiterRaiseInvalidArgumentExceptionWhenTwoOrMoreCharactersAreSpecified()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->delimiter = ',,';
     }
 
     public function testSetEnclosure()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->enclosure = "'";
         $this->assertEquals("'", $reader->enclosure);
     }
@@ -117,7 +117,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
      */
     public function testSetEnclosureRaiseInvalidArgumentException()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->enclosure = [];
     }
 
@@ -126,13 +126,13 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
      */
     public function testSetEnclosureRaiseInvalidArgumentExceptionWhenTwoOrMoreCharactersAreSpecified()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->enclosure = '""';
     }
 
     public function testSetEscape()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->escape = '\\';
         $this->assertEquals('\\', $reader->escape);
     }
@@ -142,7 +142,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
      */
     public function testSetEscapeRaiseInvalidArgumentException()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->escape = [];
     }
 
@@ -151,13 +151,13 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
      */
     public function testSetEscapeRaiseInvalidArgumentExceptionWhenTwoOrMoreCharactersAreSpecified()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->escape = '\\\\';
     }
 
     public function testSetInputEncoding()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->inputEncoding = 'SJIS-win';
         $this->assertEquals('SJIS-win', $reader->inputEncoding);
     }
@@ -167,13 +167,13 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
      */
     public function testSetInputEncodingRaiseInvalidArgumentException()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->inputEncoding = [];
     }
 
     public function testSetOutputEncoding()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->outputEncoding = 'EUC-JP';
         $this->assertEquals('EUC-JP', $reader->outputEncoding);
     }
@@ -183,13 +183,13 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
      */
     public function testSetOutputEncodingRaiseInvalidArgumentException()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->outputEncoding = [];
     }
 
     public function testSetParseByPcre()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->parseByPcre = false;
         $this->assertFalse($reader->parseByPcre);
     }
@@ -199,13 +199,13 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
      */
     public function testSetParseByPcreRaiseInvalidArgumentException()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->parseByPcre = 'false';
     }
 
     public function testFilter()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
 
         $filter1 = function ($item) {
             $item[0] = sprintf('%02d', $item[0]);
@@ -227,7 +227,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testAppendFilter()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
 
         $filter1 = function ($item) {
             $item[0] = sprintf('%02d', $item[0]);
@@ -249,7 +249,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testApplyFilters()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
 
         $reader->filter(0, function ($item) {
             $user = new \Stdclass();
@@ -273,13 +273,13 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
      */
     public function testApplyFiltersRaiseInvalidArgumentException()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $user = $reader->applyFilters('This is not an array and not a traversable.');
     }
 
     public function testConvert()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
 
         $this->assertEquals(['1', '田中'],
             $reader->convert("1,田中\r\n"));
@@ -287,14 +287,14 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConvertIgnoreNullByte()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $this->assertEquals(['1', '田中'],
             $reader->convert("1,田中\x00"));
     }
 
     public function testConvertEncloseDelimiter()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
 
         $this->assertEquals(['1', '田中,'],
             $reader->convert('1,"田中,"'));
@@ -302,7 +302,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConvertEscapedEnclosure()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
 
         $this->assertEquals(['1', '田中"'],
             $reader->convert('1,"田中"""'));
@@ -310,14 +310,14 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConvertEnclosedCarriageReturnAndLineFeed()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $this->assertEquals(['1', "田中\r\n"],
             $reader->convert("1,\"田中\r\n\""));
     }
 
     public function testConvertOnlySpaceField()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
 
         $this->assertEquals([' ', '1', '田中'],
             $reader->convert(' ,1,田中'));
@@ -325,7 +325,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConvertNotClosedEnclosure()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
 
         $this->assertEquals(['"', '1', '田中'],
             $reader->convert('",1,田中'));
@@ -333,7 +333,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConvertNotClosedEnclosureByParseStrGetCsv()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->parseByPcre = false;
         $this->assertEquals([',1,田中'],
             $reader->convert('",1,田中'));
@@ -342,7 +342,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConvertNotOpenedEnclosure()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
 
         $this->assertEquals(['', '"', '1', '田中'],
             $reader->convert(',","1","田中"'));
@@ -350,7 +350,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConvertNotOpenedEnclosureByParseStrGetCsv()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->parseByPcre = false;
         $this->assertEquals(['', ',1"', '田中'],
             $reader->convert(',","1","田中"'));
@@ -358,7 +358,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConvertNotClosedEnclosureAndSpaceBeforeDelimiter()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
 
         $this->assertEquals(['" ', '"1" ', '田中"'],
             $reader->convert('" ,"1" ,"田中""'));
@@ -366,7 +366,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConvertNotClosedEnclosureAndSpaceBeforeDelimiterByParseStrGetCsv()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->parseByPcre = false;
 
         $this->assertEquals([' ,1" ', '田中"'],
@@ -375,7 +375,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConvertNotClosedEnclosureAndSpaceAfterDelimiter()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
 
         $this->assertEquals(['"', ' "1"', ' "田中"'],
             $reader->convert('", "1", "田中""'));
@@ -383,7 +383,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConvertNotClosedEnclosureAndSpaceAfterDelimiterByParseStrGetCsv()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->parseByPcre = false;
 
         $this->assertEquals([', 1"', '田中"'],
@@ -392,7 +392,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConvertTabSeparatedValues()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->delimiter = "\t";
         $reader->enclosure = '"';
 
@@ -402,7 +402,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConvertTabSeparatedValuesAndEscapedEnclosure()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->delimiter = "\t";
         $reader->enclosure = '"';
         $reader->escape = '\\';
@@ -413,7 +413,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConvertTabSeparatedValuesAndEscapedEnclosureByStrGetCsv()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->delimiter = "\t";
         $reader->enclosure = '"';
         $reader->escape = '\\';
@@ -426,7 +426,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testConvertWithEncoding()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->inputEncoding = 'UTF-8';
         $reader->outputEncoding = 'SJIS';
 
@@ -439,7 +439,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testSetFile()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $file = new \SplFileObject('php://temp', '+r');
         $reader->setFile($file);
         $this->assertSame($file, $reader->getFile());
@@ -451,13 +451,13 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
      */
     public function testSetFileRaiseInvalidArgumentException()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->setFile([]);
     }
 
     public function testParse()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->file = new \SplFileObject('php://temp', '+r');
         $reader->file->fwrite("1,田中,一郎,22\r\n");
         $reader->file->rewind();
@@ -468,7 +468,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testParseEnclosedCarriageReturnAndLineFeed()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->file = new \SplFileObject('php://temp', '+r');
         $reader->file->fwrite("1,\"田\r\n中\",\"一\r\n郎\",22\r\n");
         $reader->file->rewind();
@@ -479,7 +479,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testFetchAll()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->file = new \SplFileObject('php://temp', '+r');
         $reader->file->fwrite("1,田中\r\n");
         $reader->file->fwrite("2,山田\r\n");
@@ -494,7 +494,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testFetchAllWithFilter()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->file = new \SplFileObject('php://temp', '+r');
         $reader->file->fwrite("1,田中,一郎,22\r\n");
         $reader->file->fwrite("2,山田,老人,91\r\n");
@@ -544,7 +544,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testFetchAllWithFilterAndEncoding()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->file = new \SplFileObject('php://temp', '+r');
         $reader->file->fwrite("1,ソ十貼能表暴予\r\n");
         $reader->file->rewind();
@@ -568,7 +568,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testFetchAllWithSomeFilters()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->file = new \SplFileObject('php://temp', '+r');
         $reader->file->fwrite("1,田中,一郎,22\r\n");
         $reader->file->fwrite("2,山田,老人,91\r\n");
@@ -614,7 +614,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testFetchAllThenParsedAndFetched()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->file = new \SplFileObject('php://temp', '+r');
         $reader->file->fwrite("1,田中\r\n");
         $reader->file->fwrite("2,山田\r\n");
@@ -631,7 +631,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testFetchAllThenParsedAndFetchedWithFilter()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->file = new \SplFileObject('php://temp', '+r');
         $reader->file->fwrite("ユーザーID,ユーザー名\r\n");
         $reader->file->fwrite("1,田中\r\n");
@@ -653,7 +653,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
     public function testRewind()
     {
-        $reader = new Reader();
+        $reader = new \Volcanus\Csv\Reader();
         $reader->file = new \SplFileObject('php://temp', '+r');
         $reader->file->fwrite("1,田中,一郎,22\r\n");
         $reader->file->rewind();

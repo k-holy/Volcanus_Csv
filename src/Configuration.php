@@ -24,7 +24,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * コンストラクタ
      *
-     * @param array 属性の配列
+     * @param array $attributes 属性の配列
      */
     public function __construct($attributes = [])
     {
@@ -44,8 +44,8 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * 属性名および初期値をセットします。
      *
-     * @param string 属性名
-     * @param mixed 初期値
+     * @param string $name 属性名
+     * @param mixed $value 初期値
      * @return $this
      */
     public function define($name, $value = null)
@@ -66,8 +66,8 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * ArrayAccess::offsetSet()
      *
-     * @param mixed
-     * @param mixed
+     * @param mixed $offset
+     * @param mixed $value
      */
     public function offsetSet($offset, $value)
     {
@@ -81,7 +81,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * ArrayAccess::offsetGet()
      *
-     * @param mixed
+     * @param mixed $offset
      * @return mixed
      */
     public function offsetGet($offset)
@@ -96,7 +96,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * ArrayAccess::offsetUnset()
      *
-     * @param mixed
+     * @param mixed $offset
      */
     public function offsetUnset($offset)
     {
@@ -108,7 +108,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * ArrayAccess::offsetExists()
      *
-     * @param mixed
+     * @param mixed $offset
      * @return bool
      */
     public function offsetExists($offset)
@@ -119,8 +119,8 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * magic setter
      *
-     * @param string 属性名
-     * @param mixed 属性値
+     * @param string $name 属性名
+     * @param mixed $value 属性値
      */
     public function __set($name, $value)
     {
@@ -130,7 +130,8 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * magic getter
      *
-     * @param string 属性名
+     * @param string $name 属性名
+     * @return mixed
      */
     public function __get($name)
     {
@@ -140,8 +141,9 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * magic call method
      *
-     * @param string
-     * @param array
+     * @param string $name
+     * @param array $args
+     * @return mixed
      */
     public function __call($name, $args)
     {
@@ -158,6 +160,8 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 
     /**
      * __toString
+     *
+     * @return string
      */
     public function __toString()
     {

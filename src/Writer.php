@@ -17,12 +17,12 @@ class Writer
 {
 
     /**
-     * @var Configuration 設定値のコレクション
+     * @var \Volcanus\Csv\Configuration 設定値のコレクション
      */
     private $config;
 
     /**
-     * @var Configuration フィールド設定のコレクション
+     * @var \Volcanus\Csv\Configuration フィールド設定のコレクション
      */
     private $fields;
 
@@ -32,12 +32,12 @@ class Writer
     private $labels;
 
     /**
-     * @var SplFileObject 出力対象ファイル
+     * @var \SplFileObject 出力対象ファイル
      */
     private $file;
 
     /**
-     * @var Builder CSVビルダ
+     * @var \Volcanus\Csv\Builder CSVビルダ
      */
     private $builder;
 
@@ -59,7 +59,7 @@ class Writer
     /**
      * constructor
      *
-     * @param array 設定オプション
+     * @param array $configurations 設定オプション
      */
     public function __construct(array $configurations = [])
     {
@@ -69,7 +69,8 @@ class Writer
     /**
      * オブジェクトを初期化します。
      *
-     * @param array 設定オプション
+     * @param array $configurations 設定オプション
+     * @return $this
      */
     public function initialize(array $configurations = [])
     {
@@ -113,7 +114,7 @@ class Writer
      * responseFilenameEncoding: レスポンス出力時のファイル名のエンコード方法
      *                           PLAIN_SJIS | PERCENT_ENCODING | RFC2047
      *
-     * @param string 設定名
+     * @param string $name 設定名
      * @return mixed 設定値 または $this
      */
     public function config($name)
@@ -178,7 +179,7 @@ class Writer
      * 1レコード分のフィールド配列をCSV形式の文字列に変換し、
      * 文字コードの変換および改行を付与して返します。
      *
-     * @param mixed array|Traversable 1レコード分のフィールド配列
+     * @param array|\Traversable $fields 1レコード分のフィールド配列
      * @return string CSVの1レコード分の文字列
      */
     public function build($fields)
@@ -210,11 +211,11 @@ class Writer
      * 引数1の場合は指定されたフィールドインデックスの名前を返します。
      * 引数2の場合は指定されたフィールドインデックスの名前をセットして$thisを返します。
      *
-     * @param int    フィールドインデックス
-     * @param string フィールド名
+     * @param int $index フィールドインデックス
+     * @param string (optional) $name フィールド名
      * @return mixed 設定値 または $this
      */
-    public function label($index)
+    public function label($index /* [,$name] */)
     {
         switch (func_num_args()) {
             case 1:
@@ -244,9 +245,9 @@ class Writer
     /**
      * CSVのフィールドを設定します。
      *
-     * @param mixed  int             フィールドインデックス
-     * @param mixed  string|callable フィールドの列名 または 値を生成するコールバック
-     * @param string フィールド名
+     * @param int $index フィールドインデックス
+     * @param string|callable $filter フィールドの列名 または 値を生成するコールバック
+     * @param string $name フィールド名
      * @return $this
      */
     public function field($index, $filter = null, $name = null)
@@ -273,7 +274,7 @@ class Writer
     /**
      * フィールドの設定を元に1レコード分の配列をフィールド配列に変換して返します。
      *
-     * @param mixed array|object 1レコード分の配列
+     * @param array|object $record 1レコード分の配列
      * @return array 1レコード分の配列
      */
     public function buildFields($record)
@@ -327,7 +328,7 @@ class Writer
     /**
      * CSVのフィールドを配列から設定します。
      *
-     * @param array  フィールド設定の配列
+     * @param array $fields フィールド設定の配列
      * @return $this
      */
     public function fields($fields)
@@ -360,7 +361,7 @@ class Writer
     /**
      * 1レコード分の配列をCSV文字列に変換して返します。
      *
-     * @param mixed array|object 1レコード分の配列
+     * @param array|object $record 1レコード分の配列
      * @return string 1レコード分のCSV文字列
      */
     public function buildContentLine($record)
@@ -371,7 +372,7 @@ class Writer
     /**
      * ファイルオブジェクトをセットします。
      *
-     * @param SplFileObject
+     * @param \SplFileObject $file
      * @return $this
      */
     public function setFile(\SplFileObject $file)
@@ -383,7 +384,7 @@ class Writer
     /**
      * ファイルオブジェクトを返します。
      *
-     * @return SplFileObject
+     * @return \SplFileObject
      */
     public function getFile()
     {
@@ -396,7 +397,7 @@ class Writer
     /**
      * データをCSVに変換してファイルに出力します。
      *
-     * @param mixed array|Traversable レコード
+     * @param array|\Traversable $records レコード
      * @return $this
      */
     public function write($records)
@@ -465,7 +466,7 @@ class Writer
     /**
      * レスポンスヘッダの生成を行います。
      *
-     * @param array レスポンスヘッダの配列
+     * @param array $headers レスポンスヘッダの配列
      * @return array レスポンスヘッダの配列
      */
     public function buildResponseHeaders(array $headers = [])
@@ -508,7 +509,7 @@ class Writer
     /**
      * レスポンスを送信します。
      *
-     * @param array レスポンスヘッダの配列
+     * @param array $headers レスポンスヘッダの配列
      */
     public function send(array $headers = [])
     {
@@ -522,8 +523,9 @@ class Writer
     /**
      * magic setter
      *
-     * @param string 設定名
-     * @param mixed 設定値
+     * @param string $name 設定名
+     * @param mixed $value 設定値
+     * @return mixed
      */
     public function __set($name, $value)
     {
@@ -531,12 +533,14 @@ class Writer
             return $this->{'set' . ucfirst($name)}($value);
         }
         $this->config($name, $value);
+        return $this;
     }
 
     /**
      * magic getter
      *
-     * @param string 設定名
+     * @param string $name 設定名
+     * @return mixed
      */
     public function __get($name)
     {

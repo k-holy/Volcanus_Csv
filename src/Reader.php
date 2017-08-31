@@ -17,22 +17,22 @@ class Reader
 {
 
     /**
-     * @var Configuration 設定値のコレクション
+     * @var \Volcanus\Csv\Configuration 設定値のコレクション
      */
     private $config;
 
     /**
-     * @var Configuration レコードフィルタのコレクション
+     * @var \Volcanus\Csv\Configuration レコードフィルタのコレクション
      */
     private $filters;
 
     /**
-     * @var File 入力対象ファイル
+     * @var \SplFileObject 入力対象ファイル
      */
     private $file;
 
     /**
-     * @var Parser CSVパーサ
+     * @var \Volcanus\Csv\Parser CSVパーサ
      */
     private $parser;
 
@@ -49,7 +49,7 @@ class Reader
     /**
      * constructor
      *
-     * @param array 設定オプション
+     * @param array $configurations 設定オプション
      */
     public function __construct(array $configurations = [])
     {
@@ -59,7 +59,8 @@ class Reader
     /**
      * オブジェクトを初期化します。
      *
-     * @param array 設定オプション
+     * @param array $configurations 設定オプション
+     * @return $this
      */
     public function initialize(array $configurations = [])
     {
@@ -102,7 +103,7 @@ class Reader
      * 分かりやすい結果を返していると思います。
      * バグを承知の上で標準関数の方が好ましいのであれば、parseByPcreを無効にしてね。
      *
-     * @param string 設定名
+     * @param string $name 設定名
      * @return mixed 設定値 または $this
      */
     public function config($name)
@@ -154,11 +155,11 @@ class Reader
      * 引数1の場合は指定されたインデックスのレコードフィルタを返します。
      * 引数2の場合は指定されたインデックスのレコードフィルタをセットして$thisを返します。
      *
-     * @param int      インデックス
-     * @param callable レコードフィルタ
+     * @param int $index インデックス
+     * @param callable (optional) $filter レコードフィルタ
      * @return mixed 設定値 または $this
      */
-    public function filter($index)
+    public function filter($index /* [,$filter] */)
     {
         switch (func_num_args()) {
             case 1:
@@ -178,7 +179,7 @@ class Reader
     /**
      * レコードフィルタを追加します。
      *
-     * @param callable レコードフィルタ
+     * @param callable $filter レコードフィルタ
      * @return $this
      */
     public function appendFilter($filter)
@@ -190,7 +191,7 @@ class Reader
     /**
      * 1レコード分の配列に全てのフィルタを実行した結果を返します。
      *
-     * @param mixed array | ArrayAccess フィールド配列
+     * @param array|\ArrayAccess $columns フィールド配列
      * @return array 1レコード分の配列
      */
     public function applyFilters($columns)
@@ -218,7 +219,7 @@ class Reader
      * (2)出力エンコーディングへの変換
      * (3)区切り文字・囲み文字・エスケープ文字を解析して文字列から配列に変換
      *
-     * @param string CSV1レコード分の文字列
+     * @param string $line CSV1レコード分の文字列
      * @return array CSV1レコード分の配列
      */
     public function convert($line)
@@ -250,7 +251,7 @@ class Reader
     /**
      * ファイルオブジェクトをセットします。
      *
-     * @param SplFileObject
+     * @param \SplFileObject $file
      * @return $this
      */
     public function setFile($file)
@@ -267,7 +268,7 @@ class Reader
     /**
      * ファイルオブジェクトを返します。
      *
-     * @return SplFileObject
+     * @return \SplFileObject
      */
     public function getFile()
     {
@@ -385,8 +386,9 @@ class Reader
     /**
      * magic setter
      *
-     * @param string 設定名
-     * @param mixed 設定値
+     * @param string $name 設定名
+     * @param mixed $value 設定値
+     * @return mixed
      */
     public function __set($name, $value)
     {
@@ -394,12 +396,14 @@ class Reader
             return $this->{'set' . ucfirst($name)}($value);
         }
         $this->config($name, $value);
+        return $this;
     }
 
     /**
      * magic getter
      *
-     * @param string 設定名
+     * @param string $name 設定名
+     * @return mixed
      */
     public function __get($name)
     {

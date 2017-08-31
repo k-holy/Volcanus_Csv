@@ -22,10 +22,10 @@ class Parser
      * 正規表現パターンは [Perlメモ] を参考
      * http://www.din.or.jp/~ohzaki/perl.htm#CSV2Values
      *
-     * @param string CSV1レコード分の文字列
-     * @param string フィールドの区切り文字
-     * @param string フィールドの囲み文字
-     * @param string フィールドに含まれる囲み文字のエスケープ文字
+     * @param string $line CSV1レコード分の文字列
+     * @param string $delimiter フィールドの区切り文字
+     * @param string $enclosure フィールドの囲み文字
+     * @param string $escape フィールドに含まれる囲み文字のエスケープ文字
      * @return array CSV1レコード分の配列
      */
     public function parse($line, $delimiter = null, $enclosure = null, $escape = null)
