@@ -1,22 +1,28 @@
 {
-    "name": "volcanus/csv",
-    "type": "library",
-    "description": "Utilities for reading and writing CSV ",
-    "keywords": ["csv"],
-    "homepage": "https://github.com/k-holy/volcanus-csv",
-    "version": "1.1.2",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "k-holy",
-            "email": "k.holy74@gmail.com"
-        }
-    ],
-    "autoload": {
-        "psr-4": { "Volcanus\\Csv\\": "src/" }
-    },
-    "require": {
-        "php": ">=5.3.3",
-        "ext-mbstring" : "*"
+  "name": "volcanus/csv",
+  "type": "library",
+  "description": "Utilities for reading and writing CSV ",
+  "keywords": [
+    "csv"
+  ],
+  "homepage": "https://github.com/k-holy/volcanus-csv",
+  "version": "1.1.2",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "k-holy",
+      "email": "k.holy74@gmail.com"
     }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Volcanus\\Csv\\": "src/"
+    }
+  },
+  "require": {
+    "php": "^5.6||^7.0||^7.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.7.20||^6.0"
+  }
 }
