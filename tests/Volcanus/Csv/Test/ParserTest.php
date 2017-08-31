@@ -15,86 +15,86 @@ use Volcanus\Csv\Parser;
  *
  * @author k.holy74@gmail.com
  */
-class ParserTest extends \PHPUnit_Framework_TestCase
+class ParserTest extends \PHPUnit\Framework\TestCase
 {
 
-	public function testParse()
-	{
-		$parser = new Parser();
-		$this->assertEquals(array('1', '田中'),
-			$parser->parse("1,田中\r\n"));
-	}
+    public function testParse()
+    {
+        $parser = new Parser();
+        $this->assertEquals(['1', '田中'],
+            $parser->parse("1,田中\r\n"));
+    }
 
-	public function testParseEncloseDelimiter()
-	{
-		$parser = new Parser();
-		$this->assertEquals(array('1', '田中,'),
-			$parser->parse('1,"田中,"'));
-	}
+    public function testParseEncloseDelimiter()
+    {
+        $parser = new Parser();
+        $this->assertEquals(['1', '田中,'],
+            $parser->parse('1,"田中,"'));
+    }
 
-	public function testParseEscapedEnclosure()
-	{
-		$parser = new Parser();
-		$this->assertEquals(array('1', '田中"'),
-			$parser->parse('1,"田中"""'));
-	}
+    public function testParseEscapedEnclosure()
+    {
+        $parser = new Parser();
+        $this->assertEquals(['1', '田中"'],
+            $parser->parse('1,"田中"""'));
+    }
 
-	public function testParseEnclosedCarriageReturnAndLineFeed()
-	{
-		$parser = new Parser();
-		$this->assertEquals(array('1', "田中\r\n"),
-			$parser->parse(("1,\"田中\r\n\"")));
-	}
+    public function testParseEnclosedCarriageReturnAndLineFeed()
+    {
+        $parser = new Parser();
+        $this->assertEquals(['1', "田中\r\n"],
+            $parser->parse(("1,\"田中\r\n\"")));
+    }
 
-	public function testParseOnlySpaceField()
-	{
-		$parser = new Parser();
-		$this->assertEquals(array(' ', '1', '田中'),
-			$parser->parse(' ,1,田中'));
-	}
+    public function testParseOnlySpaceField()
+    {
+        $parser = new Parser();
+        $this->assertEquals([' ', '1', '田中'],
+            $parser->parse(' ,1,田中'));
+    }
 
-	public function testParseNotClosedEnclosure()
-	{
-		$parser = new Parser();
-		$this->assertEquals(array('"', '1', '田中'),
-			$parser->parse('",1,田中'));
+    public function testParseNotClosedEnclosure()
+    {
+        $parser = new Parser();
+        $this->assertEquals(['"', '1', '田中'],
+            $parser->parse('",1,田中'));
 
-	}
+    }
 
-	public function testParseNotOpenedEnclosure()
-	{
-		$parser = new Parser();
-		$this->assertEquals(array('', '"', '1', '田中'),
-			$parser->parse(',","1","田中"'));
-	}
+    public function testParseNotOpenedEnclosure()
+    {
+        $parser = new Parser();
+        $this->assertEquals(['', '"', '1', '田中'],
+            $parser->parse(',","1","田中"'));
+    }
 
-	public function testParseNotClosedEnclosureAndSpaceBeforeDelimiter()
-	{
-		$parser = new Parser();
-		$this->assertEquals(array('" ', '"1" ', '田中"'),
-			$parser->parse('" ,"1" ,"田中""'));
-	}
+    public function testParseNotClosedEnclosureAndSpaceBeforeDelimiter()
+    {
+        $parser = new Parser();
+        $this->assertEquals(['" ', '"1" ', '田中"'],
+            $parser->parse('" ,"1" ,"田中""'));
+    }
 
-	public function testParseNotClosedEnclosureAndSpaceAfterDelimiter()
-	{
-		$parser = new Parser();
-		$this->assertEquals(array('"', ' "1"', ' "田中"'),
-			$parser->parse('", "1", "田中""'));
+    public function testParseNotClosedEnclosureAndSpaceAfterDelimiter()
+    {
+        $parser = new Parser();
+        $this->assertEquals(['"', ' "1"', ' "田中"'],
+            $parser->parse('", "1", "田中""'));
 
-	}
+    }
 
-	public function testParseTabSeparatedValues()
-	{
-		$parser = new Parser();
-		$this->assertEquals(array('1', '田中'),
-			$parser->parse("1\t\"田中\"", "\t", '"'));
-	}
+    public function testParseTabSeparatedValues()
+    {
+        $parser = new Parser();
+        $this->assertEquals(['1', '田中'],
+            $parser->parse("1\t\"田中\"", "\t", '"'));
+    }
 
-	public function testParseTabSeparatedValuesAndEscapedEnclosure()
-	{
-		$parser = new Parser();
-		$this->assertEquals(array('1', '田中"'),
-			$parser->parse("1\t\"田中\\\"\"", "\t", '"', '\\'));
-	}
+    public function testParseTabSeparatedValuesAndEscapedEnclosure()
+    {
+        $parser = new Parser();
+        $this->assertEquals(['1', '田中"'],
+            $parser->parse("1\t\"田中\\\"\"", "\t", '"', '\\'));
+    }
 
 }
