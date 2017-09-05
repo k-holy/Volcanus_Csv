@@ -17,7 +17,7 @@ env:
 
 before_script:
   - composer self-update
-  - composer require satooshi/php-coveralls:0.* --dev
+  - composer require php-coveralls/php-coveralls
   - composer update $DEPENDENCIES
 
 script:
